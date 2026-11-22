@@ -360,6 +360,10 @@
           <b id="cuenta"></b
           ><label><input type="checkbox" id="libres" /> Solo disponibles</label>
         </div>
+        <div id="paso-tablero" hidden>
+          <span>Elegí otro número del tablero.</span>
+          <button id="revisar" type="button">Volver a mi selección</button>
+        </div>
         <div id="grilla" class="grilla"></div>
         <p role="status" id="aviso"></p>
       </section>
@@ -554,15 +558,9 @@
       <button class="cerrar" aria-label="Cerrar">×</button>
       <h2 id="titulo-ficha">Tus números</h2>
       <div id="seleccion"></div>
-      <button
-        type="button"
-        id="agregar"
-        aria-expanded="false"
-        aria-controls="opciones"
-      >
+      <button type="button" id="agregar" aria-controls="grilla">
         + Agregar otro número
       </button>
-      <select id="opciones" aria-label="Otro número disponible" hidden></select>
       <p id="limite" hidden>Máximo de 3 números por reserva.</p>
       <p id="detalle"></p>
       <form hidden>
@@ -841,7 +839,7 @@
           ...Array.from(seleccion, (numero) => {
             const quitar = document.createElement("button");
             quitar.type = "button";
-            quitar.textContent = formatoNumero(numero) + " ×";
+            quitar.textContent = formatoNumero(numero);
             quitar.setAttribute(
               "aria-label",
               "Quitar número " + formatoNumero(numero),
@@ -855,33 +853,32 @@
             return quitar;
           }),
         );
-        $("opciones").replaceChildren(
-          new Option("Elegí un número", ""),
-          ...disponibles.map(
-            (n) => new Option(formatoNumero(n.numero), n.numero),
-          ),
-        );
-        $("opciones").hidden = true;
-        $("agregar").setAttribute("aria-expanded", "false");
         $("agregar").hidden = seleccion.size >= 3 || !disponibles.length;
         $("limite").hidden = seleccion.size < 3;
         uno("#ficha form").hidden = !edicion.abierta || !seleccion.size;
       }
       $("agregar").onclick = () => {
         if (enviando) return;
-        $("opciones").hidden = !$("opciones").hidden;
-        $("agregar").setAttribute(
-          "aria-expanded",
-          String(!$("opciones").hidden),
-        );
-        if (!$("opciones").hidden) $("opciones").focus();
+        ficha.close();
+        $("paso-tablero").hidden = false;
+        $("libres").checked = false;
+        dibujar();
+        $("revisar").focus({ preventScroll: true });
+        $("paso-tablero").scrollIntoView({
+          block: "start",
+          behavior: reducir.matches ? "instant" : "smooth",
+        });
       };
-      $("opciones").onchange = () => {
-        if (enviando || !$("opciones").value) return;
-        seleccion.add(Number($("opciones").value));
+      function abrirSeleccion() {
+        $("paso-tablero").hidden = true;
         mostrarSeleccion();
-        $("seleccion").lastElementChild.focus();
-      };
+        $("detalle").textContent = edicion.abierta
+          ? edicion.instrucciones
+          : "Vista previa. Podés explorar el tablero. Las reservas y los pagos todavía están cerrados.";
+        $("resultado").textContent = "";
+        ficha.showModal();
+      }
+      $("revisar").onclick = abrirSeleccion;
       function dibujar() {
         const botones = numeros
           .filter((n) => !$("libres").checked || n.estado === "disponible")
@@ -890,21 +887,18 @@
             b.textContent = String(n.numero).padStart(3, "0");
             b.className = n.estado;
             b.disabled = n.estado !== "disponible";
-            b.title = n.estado;
+            const marcado =
+              !$("paso-tablero").hidden && seleccion.has(n.numero);
+            b.classList.toggle("marcado", marcado);
+            b.title = marcado ? "Ya elegido" : n.estado;
             b.setAttribute(
               "aria-label",
-              "Número " + b.textContent + ", " + n.estado,
+              "Número " + b.textContent + ", " + b.title,
             );
             b.onclick = () => {
-              seleccion.clear();
+              if ($("paso-tablero").hidden) seleccion.clear();
               seleccion.add(n.numero);
-              mostrarSeleccion();
-              $("detalle").textContent = edicion.abierta
-                ? edicion.instrucciones
-                : "Vista previa. Podés explorar el tablero. Las reservas y los pagos todavía están cerrados.";
-
-              $("resultado").textContent = "";
-              $("ficha").showModal();
+              abrirSeleccion();
             };
             return b;
           });
@@ -917,6 +911,16 @@
           const d = await r.json();
           numeros = d.numeros;
           edicion = d.edicion;
+          if (!$("paso-tablero").hidden) {
+            for (const numero of seleccion) {
+              if (
+                !numeros.some(
+                  (n) => n.numero === numero && n.estado === "disponible",
+                )
+              )
+                seleccion.delete(numero);
+            }
+          }
           $("modo").textContent = edicion.abierta
             ? "Elegí un número disponible para reservarlo."
             : "Vista previa · Las reservas y los pagos todavía están cerrados.";
@@ -942,6 +946,18 @@
       function cerrarFicha() {
         if (!enviando) ficha.close();
       }
+      ficha.onclose = () => {
+        if ($("paso-tablero").hidden) {
+          for (const boton of $("grilla").querySelectorAll(".marcado")) {
+            boton.classList.remove("marcado");
+            boton.title = "disponible";
+            boton.setAttribute(
+              "aria-label",
+              "Número " + boton.textContent + ", disponible",
+            );
+          }
+        }
+      };
       uno(".cerrar").onclick = cerrarFicha;
       ficha.oncancel = (evento) => {
         if (enviando) evento.preventDefault();
@@ -989,15 +1005,11 @@
             }
             throw Error(d);
           }
-          $("agregar").hidden =
-            $("opciones").hidden =
-            $("limite").hidden =
-              true;
+          $("agregar").hidden = $("limite").hidden = true;
           $("seleccion")
             .querySelectorAll("button")
             .forEach((boton) => {
               boton.disabled = true;
-              boton.textContent = boton.textContent.replace(" ×", "");
               boton.removeAttribute("aria-label");
             });
           f.hidden = true;

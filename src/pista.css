@@ -1434,12 +1434,52 @@ footer nav {
 #agregar {
   border-style: dashed;
 }
-#opciones {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  font: inherit;
-  margin-top: 8px;
+#ficha {
+  width: min(94vw, 460px);
+}
+#seleccion {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#seleccion button {
+  position: relative;
+  padding: 22px 4px 17px;
+  border: 1px solid var(--linea);
+  border-bottom: 3px solid var(--acento);
+  border-radius: 9px;
+  color: var(--negro);
+  font:
+    clamp(28px, 7vw, 44px)/1 Pista,
+    sans-serif;
+}
+#seleccion button:not(:disabled)::after {
+  content: "×";
+  position: absolute;
+  right: 7px;
+  top: 4px;
+  font:
+    16px/1 DM,
+    sans-serif;
+}
+#paso-tablero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 14px;
+  scroll-margin-top: 15px;
+}
+#revisar {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--linea);
+  background: var(--papel);
+}
+#grilla .marcado {
+  background: var(--negro);
+  color: var(--papel);
+  outline: 2px solid var(--acento);
+  outline-offset: -2px;
 }
 #detalle,
 #limite {
