@@ -22,3 +22,11 @@ declare module "*.svg" {
   const valor: string;
   export default valor;
 }
+declare module "*.png" {
+  const valor: Uint8Array;
+  export default valor;
+}
+declare module "*.woff2" {
+  const valor: Uint8Array;
+  export default valor;
+}

@@ -11,7 +11,25 @@ import ueme from "../originales/ueme.webp";
 import lola from "../originales/lodelola_bar.jpg";
 import mag from "../originales/magsuplementos.oficial.jpg";
 
+import pista from "./pista.css";
+import club from "../originales/club.webp";
+import entrenamiento from "../originales/entrenamiento.jpg";
+import prenda from "../originales/prenda.webp";
+import proteina from "../originales/proteina.png";
+import creatina from "../originales/creatina.png";
+import pista_grano from "../originales/pista-grano.png";
+import barlow_condensed from "../originales/fuentes/barlow-condensed.woff2";
+import dm_sans from "../originales/fuentes/dm-sans.woff2";
+
 const imagenes = new Map<string, [Uint8Array, string]>([
+  ["/club.webp", [club, "image/webp"]],
+  ["/entrenamiento.jpg", [entrenamiento, "image/jpeg"]],
+  ["/prenda.webp", [prenda, "image/webp"]],
+  ["/proteina.png", [proteina, "image/png"]],
+  ["/creatina.png", [creatina, "image/png"]],
+  ["/pista-grano.png", [pista_grano, "image/png"]],
+  ["/barlow-condensed.woff2", [barlow_condensed, "font/woff2"]],
+  ["/dm-sans.woff2", [dm_sans, "font/woff2"]],
   ["/marco.webp", [foto, "image/webp"]],
   ["/lagranjadetello.jpg", [granja, "image/jpeg"]],
   ["/ueme.webp", [ueme, "image/webp"]],
@@ -110,6 +128,7 @@ async function atender(req: Request, env: Entorno) {
     }
   }
   if (leer && ruta === "/") return recurso(portada, "text/html");
+  if (leer && ruta === "/pista.css") return recurso(pista, "text/css");
   if (leer && ruta === "/estilos.css") return recurso(estilos, "text/css");
   if (leer && ruta === "/solaz.svg") return recurso(solaz, "image/svg+xml");
   const imagen = imagenes.get(ruta);

@@ -10,6 +10,8 @@ await build({
     ".css": "text",
     ".html": "text",
     ".webp": "binary",
+    ".png": "binary",
+    ".woff2": "binary",
     ".jpg": "binary",
     ".svg": "text",
   },
