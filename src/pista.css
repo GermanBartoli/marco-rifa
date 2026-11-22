@@ -193,7 +193,7 @@ h1 strong {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 64%;
+  object-position: 50% bottom;
   filter: grayscale(1) contrast(1.12) brightness(1.18);
 }
 .retrato:after {
@@ -757,7 +757,7 @@ footer {
     right: 4px;
   }
   .retrato img {
-    object-position: 53% top;
+    object-position: 53% bottom;
   }
   .titulo h2 {
     font-size: 50px;
@@ -807,7 +807,7 @@ footer {
     min-height: 340px;
   }
   .retrato img {
-    object-position: 51% top;
+    object-position: 51% bottom;
   }
   .flechas {
     gap: 5px;
