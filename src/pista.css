@@ -504,20 +504,6 @@ button[aria-pressed="true"]:not(.elegir) {
     transition: opacity 220ms ease;
   }
 }
-.pie-socio {
-  padding: 0 10px 10px;
-}
-.pie-socio strong {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-.pie-socio small {
-  font-size: 13px;
-  color: var(--negro);
-}
 @media (prefers-reduced-motion: no-preference) {
   .retrato {
     animation: revelar-retrato 0.95s cubic-bezier(0.18, 0.75, 0.15, 1) both;
