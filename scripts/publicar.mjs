@@ -4,6 +4,7 @@ const base =
   process.env.CLOUDFLARE_ACCOUNT_ID +
   "/workers/scripts/marco-rifa";
 const metadata = {
+  keep_assets: true,
   main_module: "worker.mjs",
   compatibility_date: "2026-11-21",
   keep_bindings: ["secret_text"],
