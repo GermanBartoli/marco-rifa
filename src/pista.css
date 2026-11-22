@@ -1575,6 +1575,12 @@ body:has(#visor-marca[open]) {
   border: 0;
   background: #111;
 }
+.videos-marcas video[src*='historia-ueme'] {
+  filter: saturate(1.38);
+}
+.videos-marcas video[src*='marco-gimnasio'] {
+  filter: saturate(1.18);
+}
 .videos-marcas figcaption {
   padding: 12px 18px;
   font: 600 22px/1.2 Pista, sans-serif;
