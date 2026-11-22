@@ -1,6 +1,6 @@
 # Marco Rifa
 
-Tablero de la rifa solidaria de Marco con 200 números.
+Tablero de la rifa a beneficio de Marco con 200 números.
 
 ## Desarrollo
 
