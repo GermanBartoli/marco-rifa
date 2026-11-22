@@ -2,6 +2,7 @@ import portada from "./portada.html";
 import panel from "./panel.html";
 import estilos from "./estilos.css";
 import esquema from "../db/inicial.sql";
+import pose from "../originales/marco-posando.webp";
 import foto from "./marco.webp";
 
 import solaz from "../originales/solaz.svg";
@@ -30,6 +31,7 @@ const imagenes = new Map<string, [Uint8Array, string]>([
   ["/pista-grano.png", [pista_grano, "image/png"]],
   ["/barlow-condensed.woff2", [barlow_condensed, "font/woff2"]],
   ["/dm-sans.woff2", [dm_sans, "font/woff2"]],
+  ["/marco-posando.webp", [pose, "image/webp"]],
   ["/marco.webp", [foto, "image/webp"]],
   ["/lagranjadetello.jpg", [granja, "image/jpeg"]],
   ["/ueme.webp", [ueme, "image/webp"]],

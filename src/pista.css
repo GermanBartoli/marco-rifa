@@ -916,3 +916,63 @@ dialog .boton {
 #ficha form input {
   min-width: 0;
 }
+
+.afiche h1 span {
+  font-size: 0.79em;
+}
+.afiche h1 strong {
+  font-size: 1.19em;
+}
+.retrato {
+  background: #070809;
+}
+.retrato img {
+  object-fit: contain;
+  object-position: center;
+}
+.historia {
+  background: var(--negro);
+  color: var(--papel);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 600px) minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: clamp(12px, 3vw, 52px);
+  text-align: center;
+  padding: clamp(24px, 4vw, 58px) clamp(16px, 4vw, 64px);
+}
+.historia h2 {
+  font-size: clamp(30px, 3.9vw, 60px);
+  color: var(--lima);
+  text-wrap: balance;
+}
+.historia p {
+  margin: 14px auto 0;
+  max-width: 58ch;
+  font-size: clamp(15px, 1.2vw, 18px);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.postal {
+  width: clamp(70px, 8vw, 120px);
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border: 5px solid var(--papel);
+  border-bottom-width: 12px;
+}
+.postal-club {
+  transform: rotate(-7deg);
+}
+.postal-prenda {
+  transform: rotate(7deg);
+  object-position: 50% 35%;
+}
+@media (max-width: 760px) {
+  .historia {
+    grid-template-columns: 1fr;
+    padding: 28px 20px;
+  }
+  .postal {
+    display: none;
+  }
+}
