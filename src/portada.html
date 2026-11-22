@@ -122,10 +122,12 @@
           <article class="premio p0 activo">
             <a
               class="elegir"
+              aria-haspopup="dialog"
+              aria-controls="visor-marca"
               href="https://www.instagram.com/solaz.club/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="1.º premio: Plan de 3 meses, Solaz Club. Abrir la página de la marca en otra pestaña"
+              aria-label="1.º premio: Plan de 3 meses, Solaz Club. Ver perfil de la marca dentro de la rifa"
               aria-current="true"
             >
               <div class="medio">
@@ -146,10 +148,12 @@
           <article class="premio p1">
             <a
               class="elegir"
+              aria-haspopup="dialog"
+              aria-controls="visor-marca"
               href="https://www.instagram.com/lagranjadetello/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="2.º premio: 5 kg, La Granja de Tello. Abrir la página de la marca en otra pestaña"
+              aria-label="2.º premio: 5 kg, La Granja de Tello. Ver perfil de la marca dentro de la rifa"
               aria-current="false"
             >
               <div class="medio">
@@ -170,10 +174,12 @@
           <article class="premio p2">
             <a
               class="elegir"
-              href="https://ueme.com.ar/"
+              aria-haspopup="dialog"
+              aria-controls="visor-marca"
+              href="https://www.instagram.com/ueme.ar/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="3.º premio: Prenda a elección, UEME. Abrir la página de la marca en otra pestaña"
+              aria-label="3.º premio: Prenda a elección, UEME. Ver perfil de la marca dentro de la rifa"
               aria-current="false"
             >
               <div class="medio">
@@ -194,10 +200,12 @@
           <article class="premio p4">
             <a
               class="elegir"
+              aria-haspopup="dialog"
+              aria-controls="visor-marca"
               href="https://www.instagram.com/magsuplementos.oficial/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="4.º premio: Proteína + creatina, MAG Suplementos. Abrir la página de la marca en otra pestaña"
+              aria-label="4.º premio: Proteína + creatina, MAG Suplementos. Ver perfil de la marca dentro de la rifa"
               aria-current="false"
             >
               <div class="medio">
@@ -219,10 +227,12 @@
           <article class="premio p3">
             <a
               class="elegir"
+              aria-haspopup="dialog"
+              aria-controls="visor-marca"
               href="https://www.instagram.com/lodelola_bar/"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="5.º premio: Desayuno o merienda, Lo de Lola. Abrir la página de la marca en otra pestaña"
+              aria-label="5.º premio: Desayuno o merienda, Lo de Lola. Ver perfil de la marca dentro de la rifa"
               aria-current="false"
             >
               <div class="medio">
@@ -561,6 +571,16 @@
       hidden
       >↑</a
     >
+    <dialog id="visor-marca" aria-labelledby="nombre-visor" aria-describedby="premio-visor">
+      <div class="cabecera-visor">
+        <div>
+          <span id="premio-visor"></span>
+          <h2 id="nombre-visor"></h2>
+        </div>
+        <button type="button" id="cerrar-visor" autofocus>Cerrar <span aria-hidden="true">×</span></button>
+      </div>
+      <iframe id="perfil-marca" sandbox="allow-scripts allow-same-origin" title="Perfil de la marca"></iframe>
+    </dialog>
     <dialog id="ficha" aria-labelledby="titulo-ficha">
       <button class="cerrar" aria-label="Cerrar">×</button>
       <h2 id="titulo-ficha">Tus números</h2>
@@ -708,8 +728,27 @@
           });
         }
       }
+      const visor = $("visor-marca");
+      const perfil = $("perfil-marca");
+      $("cerrar-visor").onclick = () => visor.close();
+      visor.addEventListener("click", (evento) => {
+        if (evento.target !== visor) return;
+        const borde = visor.getBoundingClientRect();
+        if (evento.clientX < borde.left || evento.clientX > borde.right ||
+            evento.clientY < borde.top || evento.clientY > borde.bottom) visor.close();
+      });
+      visor.addEventListener("close", () => perfil.removeAttribute("src"));
       premios.forEach((premio, i) => {
         const enlace = premio.querySelector(".elegir");
+        enlace.onclick = (evento) => {
+          evento.preventDefault();
+          const marca = premio.querySelector(".rotulo small").textContent;
+          $("nombre-visor").textContent = marca;
+          $("premio-visor").textContent = premio.querySelector("h3").textContent;
+          perfil.title = "Perfil de " + marca + " en Instagram";
+          perfil.src = new URL("embed/", enlace.href).href;
+          visor.showModal();
+        };
         enlace.onpointerenter = (e) => {
           if (e.pointerType === "mouse" && !movil.matches) activar(i);
         };
