@@ -1567,7 +1567,7 @@ body:has(#visor-marca[open]) {
   background: var(--negro);
   color: var(--papel);
 }
-.videos-marcas iframe {
+.videos-marcas video {
   display: block;
   width: 100%;
   height: auto;
