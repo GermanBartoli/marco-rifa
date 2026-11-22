@@ -7,10 +7,19 @@
     <title>El próximo desafío de Marco · Rifa solidaria</title>
     <link rel="stylesheet" href="/pista.css" />
   </head>
-  <body>
+  <body id="inicio">
+    <div id="lectura" aria-hidden="true"></div>
     <header class="ancho">
       <a class="marca" href="#portada"><i aria-hidden="true"></i>Marco Rifa</a>
       <nav aria-label="Secciones">
+        <label class="paleta"
+          >Paleta
+          <select id="paleta" aria-label="Paleta de colores">
+            <option value="marino">Marino y plata</option>
+            <option value="dorado">Negro y dorado</option>
+            <option value="grafito">Grafito y naranja</option>
+          </select>
+        </label>
         <a href="#premios">Premios</a><a href="#marcas">Marcas</a
         ><a class="nav-num" href="#numeros">Ver números ↗</a>
       </nav>
@@ -326,10 +335,99 @@
         <div id="grilla" class="grilla"></div>
         <p role="status" id="aviso"></p>
       </section>
+      <section class="ancho redes fin">
+        <div>
+          <small>Instagram</small>
+          <h2>Sumá chances<span>.</span></h2>
+          <p>
+            Seguí a las marcas que acompañan a Marco en Instagram para tener más
+            chances de ganar.
+          </p>
+        </div>
+        <div class="perfiles">
+          <a
+            href="https://www.instagram.com/solaz.club/"
+            target="_blank"
+            rel="noopener"
+            >Solaz Club <i>↗</i></a
+          >
+          <a
+            href="https://www.instagram.com/lagranjadetello/"
+            target="_blank"
+            rel="noopener"
+            >La Granja de Tello <i>↗</i></a
+          >
+          <a
+            href="https://www.instagram.com/ueme.ar/"
+            target="_blank"
+            rel="noopener"
+            >UEME <i>↗</i></a
+          >
+          <a
+            href="https://www.instagram.com/magsuplementos.oficial/"
+            target="_blank"
+            rel="noopener"
+            >MAG Suplementos <i>↗</i></a
+          >
+          <a
+            href="https://www.instagram.com/lodelola_bar/"
+            target="_blank"
+            rel="noopener"
+            >Lo de Lola <i>↗</i></a
+          >
+        </div>
+      </section>
+      <section class="reloj fin">
+        <div class="ancho">
+          <div class="fecha">
+            <h2>Falta para el sorteo</h2>
+            <time id="fecha-sorteo" datetime="2026-12-22T00:35:56-03:00"
+              >22 dic 2026 · 00:35 h · Argentina</time
+            >
+          </div>
+          <div class="digitos" role="timer" aria-label="Tiempo hasta el sorteo">
+            <div><b>––</b><small>Días</small></div>
+            <div><b>––</b><small>Horas</small></div>
+            <div><b>––</b><small>Minutos</small></div>
+            <div><b>––</b><small>Segundos</small></div>
+          </div>
+        </div>
+      </section>
+      <section class="sede fin">
+        <div class="ancho direccion">
+          <div>
+            <small>Lugar del sorteo</small>
+            <h2>Solaz Club</h2>
+            <p>
+              Mendiolaza Mall · Av. Malvinas Argentinas · Mendiolaza, Córdoba
+            </p>
+          </div>
+          <a
+            href="https://www.google.com/maps/search/?api=1&amp;query=Solaz+Club+Mendiolaza"
+            target="_blank"
+            rel="noopener"
+            >Cómo llegar ↗</a
+          >
+        </div>
+        <iframe
+          title="Google Maps con la ubicación de Solaz Club en Mendiolaza"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://maps.google.com/maps?q=Solaz%20Club%20Mendiolaza%20Cordoba&amp;z=16&amp;output=embed"
+        ></iframe>
+      </section>
     </main>
     <footer class="ancho">
       Marco Rifa <a href="/admin">Administración ↗</a>
     </footer>
+    <a
+      id="subir"
+      href="#inicio"
+      aria-label="Volver arriba"
+      title="Volver arriba"
+      hidden
+      >↑</a
+    >
     <dialog id="ficha">
       <button class="cerrar" aria-label="Cerrar">×</button
       ><small>Tu número</small>
@@ -366,6 +464,73 @@
       const galeria = uno(".paneles");
       const movil = matchMedia("(max-width:760px)");
       const reducir = matchMedia("(prefers-reduced-motion:reduce)");
+      const paleta = $("paleta");
+      function aplicarPaleta(nombre) {
+        if (
+          !Array.from(paleta.options).some((opcion) => opcion.value === nombre)
+        )
+          return;
+        document.body.dataset.paleta = nombre;
+        paleta.value = nombre;
+      }
+      try {
+        aplicarPaleta(localStorage.getItem("marco-paleta"));
+      } catch {}
+      paleta.onchange = () => {
+        aplicarPaleta(paleta.value);
+        try {
+          localStorage.setItem("marco-paleta", paleta.value);
+        } catch {}
+      };
+
+      function actualizarLectura() {
+        const recorrido = document.documentElement.scrollHeight - innerHeight;
+        const fraccion =
+          recorrido > 0 ? Math.min(1, Math.max(0, scrollY / recorrido)) : 0;
+        $("lectura").style.transform = "scaleX(" + fraccion + ")";
+        $("subir").hidden = scrollY < innerHeight / 2;
+      }
+      addEventListener("scroll", actualizarLectura, { passive: true });
+      new ResizeObserver(actualizarLectura).observe(document.body);
+      actualizarLectura();
+
+      const meta = Date.parse($("fecha-sorteo").dateTime);
+      const cifras = todos(".digitos b");
+      function actualizarReloj() {
+        const segundos = Math.max(0, Math.ceil((meta - Date.now()) / 1000));
+        const valores = [
+          Math.floor(segundos / 86400),
+          Math.floor(segundos / 3600) % 24,
+          Math.floor(segundos / 60) % 60,
+          segundos % 60,
+        ];
+        valores.forEach((valor, i) => {
+          const texto = String(valor).padStart(2, "0");
+          if (cifras[i].textContent !== texto) {
+            cifras[i].textContent = texto;
+            if (!reducir.matches && !document.hidden)
+              cifras[i].animate(
+                [
+                  { opacity: 0.65, transform: "translateY(3px)" },
+                  { opacity: 1, transform: "none" },
+                ],
+                240,
+              );
+          }
+        });
+        if (segundos > 0)
+          setTimeout(actualizarReloj, 1000 - (Date.now() % 1000));
+        else uno(".fecha h2").textContent = "Llegó la hora del sorteo";
+      }
+      actualizarReloj();
+      const entradas = new IntersectionObserver((registros) => {
+        for (const registro of registros)
+          if (registro.isIntersecting) {
+            registro.target.classList.add("presente");
+            entradas.unobserve(registro.target);
+          }
+      });
+      todos(".fin").forEach((seccion) => entradas.observe(seccion));
       const descripciones = [
         "Tres meses de entrenamiento en Solaz Club.",
         "5 kg de La Granja de Tello.",
