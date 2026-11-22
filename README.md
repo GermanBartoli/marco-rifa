@@ -12,4 +12,4 @@ El panel `/admin` abre Bóveda Bartoli. Cloudflare Access verifica el correo y e
 
 La edición empieza en vista previa. Para abrir reservas, definir primero el precio, las instrucciones de pago y las condiciones aplicables. La edición requiere instrucciones y apertura explícita en la base. Cada reserva activa dura 24 horas. Marco verifica la acreditación y confirma el pago desde el panel. El tablero público muestra solo números y estados. Los números pagados permanecen ocupados.
 
-Germán puede editar los textos de portada y la apertura e instrucciones de la edición desde [Panel Bartoli](https://german-gastos.bartoligerman497.workers.dev/panel/edicion). Marco usa el módulo de reservas y pagos. Los campos de portada vacíos conservan la redacción original.
+Germán puede editar los textos de portada y la apertura e instrucciones de la edición desde [Panel Bartoli](https://panel-bartoli.bartoligerman497.workers.dev/panel/edicion). Marco usa el módulo de reservas y pagos. Los campos de portada vacíos conservan la redacción original.

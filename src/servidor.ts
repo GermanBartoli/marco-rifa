@@ -95,7 +95,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     return json("Origen inválido.", 403);
   if (ruta === "/admin" || ruta.startsWith("/admin/")) {
     if (url.hostname !== "rifa.interna")
-      return Response.redirect("https://german-gastos.bartoligerman497.workers.dev/panel/rifa", 303);
+      return Response.redirect("https://panel-rifa-marco.bartoligerman497.workers.dev/panel/rifa", 303);
     if (!(await autorizado(req, env)))
       return new Response("Ingresá con la cuenta de Marco.", {
         status: 401,
