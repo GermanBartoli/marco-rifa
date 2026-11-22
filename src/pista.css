@@ -938,6 +938,21 @@ dialog .boton {
 }
 .retrato {
   background: #070809;
+  container-type: size;
+}
+.marca-ueme {
+  position: absolute;
+  z-index: 1;
+  top: calc(max(0px, 50cqh - 66.6667cqw) + clamp(7px, 2cqw, 16px));
+  right: calc(max(0px, 50cqw - 37.5cqh) + clamp(6px, 2cqw, 16px));
+  color: rgb(255 255 255 / 85%);
+  font-size: clamp(10px, 2cqw, 14px);
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px #0009;
+}
+.marca-ueme strong {
+  letter-spacing: 0.08em;
 }
 .retrato img {
   object-fit: contain;
