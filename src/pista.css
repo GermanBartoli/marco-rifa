@@ -1055,8 +1055,7 @@ body[data-paleta="grafito"] {
 #subir[hidden] {
   display: none;
 }
-.redes,
-.direccion {
+.redes {
   padding-block: clamp(36px, 5vw, 82px);
   display: flex;
   align-items: center;
@@ -1221,16 +1220,96 @@ body[data-paleta="grafito"] {
     display: none;
   }
 }
-.direccion a {
-  border-bottom: 1px solid;
-  padding-bottom: 3px;
-  white-space: nowrap;
+.plano-club {
+  display: grid;
+  grid-template-columns: minmax(285px, 360px) 1fr;
+  margin-block: clamp(28px, 4vw, 60px);
+  border: 1px solid var(--linea);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--papel);
+}
+.datos-club > img {
+  display: block;
+  width: 100%;
+  height: 155px;
+  object-fit: cover;
+}
+.contenido-club {
+  padding: 20px;
+}
+.contenido-club h2 {
+  font:
+    650 32px/1.12 DM,
+    sans-serif;
+  text-transform: none;
+  letter-spacing: -0.045em;
+  margin: 5px 0 8px;
+}
+.contenido-club p,
+.contenido-club blockquote {
+  font-size: 14px;
+}
+.acciones-club {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+.acciones-club a {
+  border: 1px solid var(--linea);
+  border-radius: 22px;
+  padding: 9px 15px;
+  font-size: 14px;
+}
+.acciones-club a:first-child {
+  background: var(--negro);
+  color: var(--papel);
+}
+.datos-club details {
+  border-top: 1px solid var(--linea);
+  padding: 10px 0;
+  font-size: 14px;
+}
+.datos-club summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.datos-club summary span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--acento);
+}
+.datos-club details a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.datos-club details p,
+.datos-club blockquote {
+  margin: 10px 0;
+}
+.datos-club cite {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+}
+.datos-club .fuente-club {
+  font-size: 12px;
 }
 .sede iframe {
   width: 100%;
-  height: clamp(210px, 25vw, 360px);
+  height: 100%;
+  min-height: 410px;
   border: 0;
   display: block;
+}
+@media (max-width: 680px) {
+  .plano-club {
+    grid-template-columns: 1fr;
+  }
+  .sede iframe {
+    min-height: 0;
+    height: 260px;
+  }
 }
 @media (prefers-reduced-motion: no-preference) {
   .fin.presente > .ancho,
@@ -1259,8 +1338,7 @@ body[data-paleta="grafito"] {
   header nav {
     flex-wrap: wrap;
   }
-  .redes,
-  .direccion {
+  .redes {
     flex-direction: column;
     align-items: start;
     gap: 16px;

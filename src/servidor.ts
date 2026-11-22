@@ -1,5 +1,6 @@
 import portada from "./portada.html";
 import portadaSocial from "../originales/portada-social.jpg";
+import miniatura from "../originales/marco-rifa-social.jpg";
 import icono from "./favicon.svg";
 import panel from "./panel.html";
 import estilos from "./estilos.css";
@@ -25,6 +26,7 @@ import barlow_condensed from "../originales/fuentes/barlow-condensed.woff2";
 import dm_sans from "../originales/fuentes/dm-sans.woff2";
 
 const imagenes = new Map<string, [Uint8Array, string]>([
+  ["/marco-rifa-social.jpg", [miniatura, "image/jpeg"]],
   ["/portada-social.jpg", [portadaSocial, "image/jpeg"]],
   ["/club.webp", [club, "image/webp"]],
   ["/entrenamiento.jpg", [entrenamiento, "image/jpeg"]],
@@ -134,7 +136,12 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
   }
   if (
     req.method === "HEAD" &&
-    ["/", "/portada-social.jpg", "/favicon.svg"].includes(ruta)
+    [
+      "/",
+      "/marco-rifa-social.jpg",
+      "/portada-social.jpg",
+      "/favicon.svg",
+    ].includes(ruta)
   ) {
     const respuesta = await atender(new Request(url, { method: "GET" }), env);
     return new Response(null, {
