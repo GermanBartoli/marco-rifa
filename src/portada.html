@@ -125,6 +125,7 @@
             <a
               class="elegir"
               aria-haspopup="dialog"
+              aria-describedby="texto-premio-1"
               aria-controls="visor-marca"
               href="https://www.instagram.com/solaz.club/"
               target="_blank"
@@ -144,6 +145,7 @@
               <div class="rotulo">
                 <small>Solaz Club</small>
                 <h3>Plan de 3 meses</h3>
+                <p id="texto-premio-1" class="descripcion-premio">Tres meses de entrenamiento en Solaz Club.</p>
               </div>
             </a>
           </article>
@@ -151,6 +153,7 @@
             <a
               class="elegir"
               aria-haspopup="dialog"
+              aria-describedby="texto-premio-2"
               aria-controls="visor-marca"
               href="https://www.instagram.com/lagranjadetello/"
               target="_blank"
@@ -170,6 +173,7 @@
               <div class="rotulo">
                 <small>La Granja de Tello</small>
                 <h3>5 kg de asado</h3>
+                <p id="texto-premio-2" class="descripcion-premio">El asado incluye tira de asado banderita, matambre de cerdo, chorizo de cerdo y morcilla.</p>
               </div>
             </a>
           </article>
@@ -177,6 +181,7 @@
             <a
               class="elegir"
               aria-haspopup="dialog"
+              aria-describedby="texto-premio-3"
               aria-controls="visor-marca"
               href="https://www.instagram.com/ueme.ar/"
               target="_blank"
@@ -196,6 +201,7 @@
               <div class="rotulo">
                 <small>UEME</small>
                 <h3>Prenda a elección</h3>
+                <p id="texto-premio-3" class="descripcion-premio">Una prenda a elección de UEME. Foto de catálogo ilustrativa.</p>
               </div>
             </a>
           </article>
@@ -203,6 +209,7 @@
             <a
               class="elegir"
               aria-haspopup="dialog"
+              aria-describedby="texto-premio-4"
               aria-controls="visor-marca"
               href="https://www.instagram.com/magsuplementos.oficial/"
               target="_blank"
@@ -223,6 +230,7 @@
               <div class="rotulo">
                 <small>MAG Suplementos</small>
                 <h3>Proteína + creatina</h3>
+                <p id="texto-premio-4" class="descripcion-premio">Una proteína y una creatina MAG. Envases de catálogo ilustrativos.</p>
               </div>
             </a>
           </article>
@@ -230,6 +238,7 @@
             <a
               class="elegir"
               aria-haspopup="dialog"
+              aria-describedby="texto-premio-5"
               aria-controls="visor-marca"
               href="https://www.instagram.com/lodelola_bar/"
               target="_blank"
@@ -249,14 +258,12 @@
               <div class="rotulo">
                 <small>Lo de Lola</small>
                 <h3>Desayuno o merienda</h3>
+                <p id="texto-premio-5" class="descripcion-premio">Un desayuno o una merienda para dos personas en Lo de Lola.</p>
               </div>
             </a>
           </article>
         </div>
         <div class="detalle">
-          <p id="descripcion" aria-live="polite">
-            Tres meses de entrenamiento en Solaz Club.
-          </p>
           <div id="selector" hidden>
             <button data-envase="ambos" aria-pressed="true">Ambos</button
             ><button data-envase="proteina" aria-pressed="false">
@@ -689,13 +696,6 @@
           }
       });
       todos(".fin").forEach((seccion) => entradas.observe(seccion));
-      const descripciones = [
-        "Tres meses de entrenamiento en Solaz Club.",
-        "El asado incluye tira de asado banderita, matambre de cerdo, chorizo de cerdo y morcilla.",
-        "Una prenda a elección de UEME. Foto de catálogo ilustrativa.",
-        "Una proteína y una creatina MAG. Envases de catálogo ilustrativos.",
-        "Un desayuno o una merienda para dos personas en Lo de Lola.",
-      ];
       let actual = 0;
       function activar(indice, desplazar = false) {
         actual = (indice + premios.length) % premios.length;
@@ -706,7 +706,6 @@
             .setAttribute("aria-current", actual === i);
         });
         uno("#contador").textContent = "0" + (actual + 1) + " / 05";
-        uno("#descripcion").textContent = descripciones[actual];
         uno("#selector").hidden = !premios[actual].classList.contains("p4");
         if (desplazar && movil.matches) {
           const tarjeta = premios[actual].getBoundingClientRect();

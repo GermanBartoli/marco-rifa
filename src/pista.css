@@ -356,6 +356,18 @@ h2 span {
   left: 12px;
   right: 8px;
 }
+.descripcion-premio {
+  display: none;
+}
+.activo .descripcion-premio {
+  display: block;
+  margin: 6px 0 0;
+  font: 14px/1.4 DM, sans-serif;
+  text-shadow: 0 1px 3px #000;
+}
+.detalle:has(#selector[hidden]) {
+  display: none;
+}
 .rotulo small {
   font:
     11px/1.2 DM,
