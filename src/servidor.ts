@@ -215,6 +215,16 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       headers: respuesta.headers,
     });
   }
+  if ((leer || req.method === "HEAD") && ruta === "/videos/entrenar.mp4") {
+    const rango = req.headers.get("Range");
+    const archivo = await fetch(
+      "https://raw.githubusercontent.com/GermanBartoli/marco-rifa/v1.12.6/public/videos/entrenar.mp4",
+      { method: req.method, headers: rango ? { Range: rango } : {} },
+    );
+    const respuesta = new Response(archivo.body, archivo);
+    if (archivo.ok) respuesta.headers.set("Content-Type", "video/mp4");
+    return respuesta;
+  }
   if (leer && ruta === "/favicon.svg") return recurso(icono, "image/svg+xml");
   if (leer && ruta === "/") {
     const original = recurso(portada.replace("/*ESTADOS*/null", JSON.stringify(estados)), "text/html");
