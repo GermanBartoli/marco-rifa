@@ -1,4 +1,6 @@
 import portada from "./portada.html";
+import portadaSocial from "../originales/portada-social.jpg";
+import icono from "./favicon.svg";
 import panel from "./panel.html";
 import estilos from "./estilos.css";
 import esquema from "../db/inicial.sql";
@@ -23,6 +25,7 @@ import barlow_condensed from "../originales/fuentes/barlow-condensed.woff2";
 import dm_sans from "../originales/fuentes/dm-sans.woff2";
 
 const imagenes = new Map<string, [Uint8Array, string]>([
+  ["/portada-social.jpg", [portadaSocial, "image/jpeg"]],
   ["/club.webp", [club, "image/webp"]],
   ["/entrenamiento.jpg", [entrenamiento, "image/jpeg"]],
   ["/prenda.webp", [prenda, "image/webp"]],
@@ -73,7 +76,7 @@ async function autorizado(peticion: Request, env: Entorno) {
   return diferencia === 0;
 }
 
-async function atender(req: Request, env: Entorno) {
+async function atender(req: Request, env: Entorno): Promise<Response> {
   const url = new URL(req.url);
   const ruta = url.pathname;
   const leer = req.method === "GET";
@@ -129,6 +132,17 @@ async function atender(req: Request, env: Entorno) {
         : json("La reserva ya cambió.", 409);
     }
   }
+  if (
+    req.method === "HEAD" &&
+    ["/", "/portada-social.jpg", "/favicon.svg"].includes(ruta)
+  ) {
+    const respuesta = await atender(new Request(url, { method: "GET" }), env);
+    return new Response(null, {
+      status: respuesta.status,
+      headers: respuesta.headers,
+    });
+  }
+  if (leer && ruta === "/favicon.svg") return recurso(icono, "image/svg+xml");
   if (leer && ruta === "/") return recurso(portada, "text/html");
   if (leer && ruta === "/pista.css") return recurso(pista, "text/css");
   if (leer && ruta === "/estilos.css") return recurso(estilos, "text/css");
