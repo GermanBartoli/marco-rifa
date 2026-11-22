@@ -1,6 +1,6 @@
 {
   "name": "marco-rifa",
-  "version": "1.11.14",
+  "version": "1.11.15",
   "description": "Rifa solidaria para Marco",
   "scripts": {
     "test": "node --test scripts/reservas.test.mjs",

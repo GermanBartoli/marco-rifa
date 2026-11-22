@@ -1038,6 +1038,11 @@ dialog .boton {
     aspect-ratio: 0.44;
     object-fit: cover;
   }
+  .postal-prenda {
+    width: clamp(108px, 14vw, 136px);
+    height: auto;
+    aspect-ratio: 4 / 5;
+  }
 }
 @media (max-width: 760px) {
   .historia {
