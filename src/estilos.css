@@ -336,6 +336,13 @@ footer {
   display: grid;
   place-items: center;
 }
+.sello.ueme {
+  background: #fff;
+  border-radius: 4px;
+}
+.visor small {
+  overflow-wrap: anywhere;
+}
 .sello img {
   object-fit: contain;
   display: block;

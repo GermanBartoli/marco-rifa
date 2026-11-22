@@ -7,6 +7,18 @@ import foto from "./marco.webp";
 import solaz from "../originales/solaz.svg";
 import granja from "../originales/lagranjadetello.jpg";
 
+import ueme from "../originales/ueme.webp";
+import lola from "../originales/lodelola_bar.jpg";
+import mag from "../originales/magsuplementos.oficial.jpg";
+
+const imagenes = new Map<string, [Uint8Array, string]>([
+  ["/marco.webp", [foto, "image/webp"]],
+  ["/lagranjadetello.jpg", [granja, "image/jpeg"]],
+  ["/ueme.webp", [ueme, "image/webp"]],
+  ["/lodelola_bar.jpg", [lola, "image/jpeg"]],
+  ["/magsuplementos.oficial.jpg", [mag, "image/jpeg"]],
+]);
+
 interface Entorno {
   DB: D1Database;
   CLAVE_MARCO?: string;
@@ -100,20 +112,16 @@ async function atender(req: Request, env: Entorno) {
   if (leer && ruta === "/") return recurso(portada, "text/html");
   if (leer && ruta === "/estilos.css") return recurso(estilos, "text/css");
   if (leer && ruta === "/solaz.svg") return recurso(solaz, "image/svg+xml");
-  if (leer && ruta === "/lagranjadetello.jpg")
-    return new Response(new Uint8Array(granja), {
+  const imagen = imagenes.get(ruta);
+  if (leer && imagen) {
+    const [contenido, tipo] = imagen;
+    return new Response(new Uint8Array(contenido), {
       headers: {
-        "Content-Type": "image/jpeg",
+        "Content-Type": tipo,
         "Cache-Control": "public, max-age=86400",
       },
     });
-  if (leer && ruta === "/marco.webp")
-    return new Response(new Uint8Array(foto), {
-      headers: {
-        "Content-Type": "image/webp",
-        "Cache-Control": "public, max-age=86400",
-      },
-    });
+  }
   if (leer && ruta === "/api/tablero") {
     const [edicion, numeros] = await env.DB.batch([
       env.DB.prepare(
