@@ -1028,6 +1028,17 @@ dialog .boton {
   transform: rotate(7deg);
   height: clamp(96px, 10vw, 148px);
 }
+@media (min-width: 761px) and (max-width: 1100px) {
+  .historia {
+    grid-template-columns: minmax(70px, 1fr) minmax(0, 600px) minmax(70px, 1fr);
+  }
+  .postal-club {
+    height: clamp(112px, 14vw, 145px);
+    width: auto;
+    aspect-ratio: 0.44;
+    object-fit: cover;
+  }
+}
 @media (max-width: 760px) {
   .historia {
     grid-template-columns: 1fr;
