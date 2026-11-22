@@ -1,0 +1,16 @@
+declare module "*.html" {
+  const valor: string;
+  export default valor;
+}
+declare module "*.css" {
+  const valor: string;
+  export default valor;
+}
+declare module "*.sql" {
+  const valor: string;
+  export default valor;
+}
+declare module "*.webp" {
+  const valor: Uint8Array;
+  export default valor;
+}

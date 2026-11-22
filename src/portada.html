@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es-AR">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  /><meta name="robots" content="noindex" /><title>
+    Marco Rifa · Tablero de números</title
+  ><link rel="stylesheet" href="/estilos.css" />
+  <header>
+    <a class="logo" href="/">MARCO<span>RIFA</span></a>
+    <nav><a href="#premios">Premios</a><a href="#numeros">Números ↘</a></nav>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="intro">
+        <div class="etiqueta">RIFA SOLIDARIA</div>
+        <h1>Todos por<br /><em>Marco.</em></h1>
+        <p>
+          Una rifa para acompañar a Marco, con tres premios para quienes se
+          sumen.
+        </p>
+        <a class="boton" href="#numeros">Explorar números ↘</a>
+      </div>
+      <figure>
+        <img src="/marco.webp" alt="Marco Bartoli en el gimnasio" />
+        <figcaption>MARCO BARTOLI</figcaption>
+      </figure>
+    </section>
+    <section id="premios">
+      <h2>Los premios<span>.</span></h2>
+      <div class="premios">
+        <article>
+          <small>1.er premio</small><strong>3 meses de gym</strong>
+        </article>
+        <article><small>2.º premio</small><strong>Un asado</strong></article>
+        <article><small>3.er premio</small><strong>Ropa</strong></article>
+      </div>
+    </section>
+    <section id="numeros">
+      <h2>Elegí tu número<span>.</span></h2>
+      <p id="modo">Cargando edición…</p>
+      <div class="barra">
+        <b id="cuenta"></b
+        ><label><input type="checkbox" id="libres" /> Solo disponibles</label>
+      </div>
+      <div id="grilla" class="grilla"></div>
+      <p role="status" id="aviso"></p>
+    </section>
+  </main>
+  <footer>Marco Rifa <a href="/admin">Administración ↗</a></footer>
+  <dialog id="ficha">
+    <button class="cerrar" aria-label="Cerrar">×</button
+    ><small>Tu número</small>
+    <h2 id="elegido"></h2>
+    <p id="detalle"></p>
+    <form hidden>
+      <label
+        >Nombre<input
+          name="nombre"
+          required
+          minlength="2"
+          maxlength="80"
+          autocomplete="name" /></label
+      ><label
+        >WhatsApp o teléfono<input
+          name="contacto"
+          type="tel"
+          required
+          maxlength="24"
+          autocomplete="tel" /></label
+      ><button class="boton">Reservar por 24 horas</button>
+    </form>
+    <p id="resultado" role="status"></p>
+  </dialog>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let numeros = [],
+      edicion = {},
+      elegido;
+    function dibujar() {
+      const botones = numeros
+        .filter((n) => !$("libres").checked || n.estado === "disponible")
+        .map((n) => {
+          const b = document.createElement("button");
+          b.textContent = String(n.numero).padStart(3, "0");
+          b.className = n.estado;
+          b.disabled = n.estado !== "disponible";
+          b.title = n.estado;
+          b.setAttribute(
+            "aria-label",
+            "Número " + b.textContent + ", " + n.estado,
+          );
+          b.onclick = () => {
+            elegido = n.numero;
+            $("elegido").textContent = b.textContent;
+            $("detalle").textContent = edicion.abierta
+              ? edicion.instrucciones
+              : "Vista previa. Podés explorar el tablero. Las reservas y los pagos todavía están cerrados.";
+            document.querySelector("form").hidden = !edicion.abierta;
+            $("resultado").textContent = "";
+            $("ficha").showModal();
+          };
+          return b;
+        });
+      $("grilla").replaceChildren(...botones);
+    }
+    async function cargar() {
+      try {
+        const r = await fetch("/api/tablero");
+        if (!r.ok) throw Error();
+        const d = await r.json();
+        numeros = d.numeros;
+        edicion = d.edicion;
+        $("modo").textContent = edicion.abierta
+          ? "Elegí un número disponible para reservarlo."
+          : "Vista previa · Las reservas y los pagos todavía están cerrados.";
+        $("cuenta").textContent =
+          numeros.filter((n) => n.estado === "disponible").length +
+          " de " +
+          numeros.length +
+          " disponibles";
+        $("aviso").textContent = "";
+        const foco = document.activeElement?.getAttribute("aria-label");
+        dibujar();
+        if (foco)
+          Array.from($("grilla").children)
+            .find((b) => b.getAttribute("aria-label") === foco)
+            ?.focus({ preventScroll: true });
+      } catch {
+        $("aviso").textContent =
+          "No se pudo actualizar el tablero. Reintentando…";
+      }
+    }
+    $("libres").onchange = dibujar;
+    document.querySelector(".cerrar").onclick = () => $("ficha").close();
+    document.querySelector("form").onsubmit = async (e) => {
+      e.preventDefault();
+      const f = e.currentTarget;
+      const b = f.querySelector("button");
+      b.disabled = true;
+      try {
+        const r = await fetch("/api/reservas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numero: elegido,
+            ...Object.fromEntries(new FormData(f)),
+          }),
+        });
+        const d = await r.json();
+        if (!r.ok) throw Error(d);
+        f.hidden = true;
+        f.reset();
+        $("resultado").textContent =
+          "Reservado por 24 horas. Guardá tu referencia: " + d.referencia;
+        await cargar();
+      } catch (err) {
+        $("resultado").textContent = err.message;
+      } finally {
+        b.disabled = false;
+      }
+    };
+    cargar();
+    setInterval(() => {
+      if (!document.hidden && !$("ficha").open) cargar();
+    }, 30000);
+  </script>
+</html>

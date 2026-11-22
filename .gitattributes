@@ -1,0 +1,4 @@
+* text=auto eol=crlf
+*.webp binary
+*.jpeg binary
+*.PNG binary

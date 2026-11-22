@@ -1,0 +1,25 @@
+name: Publicar Marco Rifa
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publicar-marco-rifa
+  cancel-in-progress: false
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: node scripts/publicar.mjs
+        env:
+          CLOUDFLARE_ACCOUNT_ID: 3523de741e46113fc18e3e1dd118f1d2
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

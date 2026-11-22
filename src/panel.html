@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es-AR">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Panel de Marco</title
+  ><link rel="stylesheet" href="/estilos.css" />
+  <header>
+    <a class="logo" href="/">MARCO<span>RIFA</span></a
+    ><a href="/">Ver tablero ↗</a>
+  </header>
+  <main>
+    <section>
+      <small>Administración</small>
+      <h1>Panel de Marco<span>.</span></h1>
+      <h2>Reservas y pagos</h2>
+      <p>Confirmá cada pago después de verificar la acreditación.</p>
+      <button id="actualizar">Actualizar</button>
+      <p id="estado" role="status"></p>
+      <div id="lista"></div>
+    </section>
+  </main>
+  <script>
+    const lista = document.getElementById("lista"),
+      estado = document.getElementById("estado");
+    async function cargar() {
+      try {
+        const r = await fetch("/admin/reservas");
+        if (!r.ok) throw Error();
+        const filas = await r.json();
+        lista.replaceChildren();
+        estado.textContent = filas.length
+          ? ""
+          : "Todavía no hay reservas ni pagos.";
+        for (const fila of filas) {
+          const a = document.createElement("article"),
+            titulo = document.createElement("h3"),
+            p = document.createElement("p");
+          titulo.textContent = "#" + fila.numero + " · " + fila.nombre;
+          p.textContent = [
+            fila.estado,
+            fila.contacto,
+            fila.referencia,
+            fila.vence
+              ? "Vence " + new Date(fila.vence * 1000).toLocaleString("es-AR")
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          a.append(titulo, p);
+          if (fila.estado === "reservado") {
+            for (const [accion, texto] of [
+              ["pagar", "Confirmar pago"],
+              ["liberar", "Liberar número"],
+            ]) {
+              const b = document.createElement("button");
+              b.textContent = texto;
+              b.onclick = async () => {
+                if (!confirm(texto + " para el número " + fila.numero + "?"))
+                  return;
+                b.disabled = true;
+                try {
+                  const res = await fetch("/admin/actualizar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      numero: fila.numero,
+                      referencia: fila.referencia,
+                      accion,
+                    }),
+                  });
+                  if (!res.ok) throw Error(await res.json());
+                  await cargar();
+                } catch (e) {
+                  estado.textContent = e.message;
+                } finally {
+                  b.disabled = false;
+                }
+              };
+              a.append(b);
+            }
+          }
+          lista.append(a);
+        }
+      } catch {
+        estado.textContent = "No pudimos cargar las reservas.";
+      }
+    }
+    document.getElementById("actualizar").onclick = cargar;
+    cargar();
+  </script>
+</html>

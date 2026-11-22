@@ -1,0 +1,16 @@
+{
+  "name": "marco-rifa",
+  "version": "1.0.0",
+  "description": "Rifa solidaria para Marco",
+  "scripts": {
+    "test": "node --test scripts/reservas.test.mjs",
+    "build": "tsc && node scripts/compilar.mjs"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261121.1",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}
