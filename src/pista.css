@@ -317,6 +317,9 @@ h2 span {
 .medio > img {
   object-fit: cover;
 }
+.p4:not(.activo) .medio > img {
+  object-position: 80% center;
+}
 .sombra {
   background: linear-gradient(to top, #111610e8, transparent 63%);
 }
