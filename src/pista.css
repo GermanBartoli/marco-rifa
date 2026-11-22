@@ -1375,7 +1375,7 @@ body[data-paleta="grafito"] {
 .floating-whatsapp {
   position: fixed;
   bottom: 18px;
-  left: 16px;
+  right: 16px;
   z-index: 5;
   width: 48px;
   height: 48px;
@@ -1385,6 +1385,9 @@ body[data-paleta="grafito"] {
   background: #087843;
   color: white;
   box-shadow: 0 3px 14px #0003;
+}
+body:has(#subir:not([hidden])) .floating-whatsapp {
+  bottom: calc(18px + 46px + 10px);
 }
 .floating-whatsapp svg {
   width: 31px;
