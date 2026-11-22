@@ -1,5 +1,6 @@
 import portada from "./portada.html";
 import portadaSocial from "../originales/portada-social.jpg";
+import miniaturaGris from "../originales/marco-fondo-gris-social.jpg";
 import miniatura from "../originales/marco-rifa-social.jpg";
 import icono from "./favicon.svg";
 import panel from "./panel.html";
@@ -31,6 +32,7 @@ import barlow_condensed from "../originales/fuentes/barlow-condensed.woff2";
 import dm_sans from "../originales/fuentes/dm-sans.woff2";
 
 const imagenes = new Map<string, [Uint8Array, string]>([
+  ["/marco-fondo-gris-social.jpg", [miniaturaGris, "image/jpeg"]],
   ["/marco-rifa-social.jpg", [miniatura, "image/jpeg"]],
   ["/portada-social.jpg", [portadaSocial, "image/jpeg"]],
   ["/logos-patrocinadores.png", [logosPatrocinadores, "image/png"]],
@@ -192,6 +194,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     req.method === "HEAD" &&
     [
       "/",
+      "/marco-fondo-gris-social.jpg",
       "/marco-rifa-social.jpg",
       "/portada-social.jpg",
       "/favicon.svg",
