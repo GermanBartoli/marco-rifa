@@ -971,11 +971,22 @@ dialog .boton {
 }
 @media (max-width: 760px) {
   .historia {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 24px;
     padding: 28px 20px;
   }
-  .postal {
-    display: none;
+  .historia > div {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .postal-club {
+    justify-self: end;
+    height: 86px;
+  }
+  .postal-prenda {
+    justify-self: start;
+    width: 80px;
+    height: 86px;
   }
 }
 body {
@@ -1335,11 +1346,25 @@ body[data-paleta="grafito"] {
 }
 
 .acciones-portada {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 18px;
   margin-top: 20px;
+}
+.datos-sorteo {
+  flex-basis: 100%;
+  font-size: 13px;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+@media (min-width: 1100px) {
+  .datos-sorteo {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+  }
 }
 .acciones-portada .accion {
   margin: 0;
