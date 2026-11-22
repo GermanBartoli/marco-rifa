@@ -1568,7 +1568,6 @@ body:has(#visor-marca[open]) {
   color: var(--papel);
 }
 .videos-marcas video {
-  filter: saturate(0.82);
   display: block;
   width: 100%;
   height: auto;
