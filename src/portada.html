@@ -577,7 +577,10 @@
           <span id="premio-visor"></span>
           <h2 id="nombre-visor"></h2>
         </div>
-        <button type="button" id="cerrar-visor" autofocus>Cerrar <span aria-hidden="true">×</span></button>
+        <div class="acciones-visor">
+          <a id="tienda-ueme" href="https://ueme.com.ar/" target="_blank" rel="noopener noreferrer" hidden>Ir a UEME <span aria-hidden="true">↗</span></a>
+          <button type="button" id="cerrar-visor" autofocus>Cerrar <span aria-hidden="true">×</span></button>
+        </div>
       </div>
       <iframe id="perfil-marca" sandbox="allow-scripts allow-same-origin" title="Perfil de la marca"></iframe>
     </dialog>
@@ -761,6 +764,7 @@
           const marca = premio.querySelector(".rotulo small").textContent;
           $("nombre-visor").textContent = marca;
           $("premio-visor").textContent = premio.querySelector("h3").textContent;
+          $("tienda-ueme").hidden = marca !== "UEME";
           perfil.title = "Perfil de " + marca + " en Instagram";
           perfil.src = new URL("embed/", enlace.href).href;
           visor.showModal();
