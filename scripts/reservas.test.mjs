@@ -32,7 +32,9 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async () =
     },
   };
   const env = { DB, CLAVE_MARCO: "prueba-local" };
-  const origen = "https://prueba.local";
+  const origen = "https://rifa.interna";
+  const accesoPublico = await worker.fetch(new Request("https://prueba.local/admin"), env);
+  assert.equal(accesoPublico.status, 303);
   async function pedir(ruta, datos, admin = false) {
     const headers = { Origin: origen };
     if (admin)

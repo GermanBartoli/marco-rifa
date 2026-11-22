@@ -4,10 +4,10 @@
     name="viewport"
     content="width=device-width,initial-scale=1"
   /><title>Panel de Marco</title
-  ><link rel="stylesheet" href="/estilos.css" />
+  ><link rel="stylesheet" href="https://marco-rifa.bartoligerman497.workers.dev/estilos.css" />
   <header>
-    <a class="logo" href="/">MARCO<span>RIFA</span></a
-    ><a href="/">Ver tablero ↗</a>
+    <a class="logo" href="https://marco-rifa.bartoligerman497.workers.dev/">MARCO<span>RIFA</span></a
+    ><a href="/panel">Volver al panel</a>
   </header>
   <main>
     <section>
@@ -25,7 +25,7 @@
       estado = document.getElementById("estado");
     async function cargar() {
       try {
-        const r = await fetch("/admin/reservas");
+        const r = await fetch("/panel/rifa/reservas");
         if (!r.ok) throw Error();
         const filas = await r.json();
         lista.replaceChildren();
@@ -60,7 +60,7 @@
                   return;
                 b.disabled = true;
                 try {
-                  const res = await fetch("/admin/actualizar", {
+                  const res = await fetch("/panel/rifa/actualizar", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

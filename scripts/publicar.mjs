@@ -9,7 +9,7 @@ const metadata = {
   compatibility_date: "2026-11-21",
   keep_bindings: ["secret_text"],
   bindings: [
-    { type: "d1", name: "DB", id: "8494cda9-4a0b-4a41-a920-e8efdc845c3a" },
+    { type: "d1", name: "DB", id: "601dd03e-4773-43ad-a57d-039bb588d789" },
   ],
   observability: { enabled: true, traces: { enabled: true } },
 };

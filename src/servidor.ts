@@ -94,6 +94,8 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
   if (ejecutar && req.headers.get("Origin") !== url.origin)
     return json("Origen inválido.", 403);
   if (ruta === "/admin" || ruta.startsWith("/admin/")) {
+    if (url.hostname !== "rifa.interna")
+      return Response.redirect("https://boveda-bartoli.bartoligerman497.workers.dev/panel/rifa", 303);
     if (!(await autorizado(req, env)))
       return new Response("Ingresá con la cuenta de Marco.", {
         status: 401,
