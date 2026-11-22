@@ -16,6 +16,7 @@ import lola from "../originales/lodelola_bar.jpg";
 import mag from "../originales/magsuplementos.oficial.jpg";
 
 import pista from "./pista.css";
+import botellaSolaz from "../originales/botella-solaz.png";
 import club from "../originales/club.webp";
 import entrenamiento from "../originales/entrenamiento.jpg";
 import remeraGris from "../originales/remera-gris.webp";
@@ -30,6 +31,7 @@ import dm_sans from "../originales/fuentes/dm-sans.woff2";
 const imagenes = new Map<string, [Uint8Array, string]>([
   ["/marco-rifa-social.jpg", [miniatura, "image/jpeg"]],
   ["/portada-social.jpg", [portadaSocial, "image/jpeg"]],
+  ["/botella-solaz.png", [botellaSolaz, "image/png"]],
   ["/club.webp", [club, "image/webp"]],
   ["/entrenamiento.jpg", [entrenamiento, "image/jpeg"]],
   ["/remera-gris.webp", [remeraGris, "image/webp"]],

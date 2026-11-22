@@ -1005,10 +1005,23 @@ dialog .boton {
     transition: transform 240ms ease-out;
   }
   .historia .postal:hover {
-    transform: translateY(-4px) rotate(0) scale(1.09);
+    animation: balancear-producto 1.45s ease-in-out infinite alternate;
+  }
+}
+@keyframes balancear-producto {
+  from {
+    transform: translateY(-3px) rotate(-5deg) scale(1.08);
+  }
+  to {
+    transform: translateY(-12px) rotate(6deg) scale(1.16);
   }
 }
 .postal-club {
+  height: clamp(108px, 10vw, 150px);
+  width: auto;
+  max-width: 100%;
+  aspect-ratio: auto;
+  object-fit: contain;
   transform: rotate(-7deg);
 }
 .postal-prenda {
