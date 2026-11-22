@@ -122,7 +122,8 @@
               aria-current="true"
             >
               <div class="medio">
-                <img class="cubierta"
+                <img
+                  class="cubierta"
                   src="/club.webp"
                   alt="Interior de Solaz Club"
                 />
@@ -549,10 +550,20 @@
       hidden
       >↑</a
     >
-    <dialog id="ficha">
-      <button class="cerrar" aria-label="Cerrar">×</button
-      ><small>Tu número</small>
-      <h2 id="elegido"></h2>
+    <dialog id="ficha" aria-labelledby="titulo-ficha">
+      <button class="cerrar" aria-label="Cerrar">×</button>
+      <h2 id="titulo-ficha">Tus números</h2>
+      <div id="seleccion"></div>
+      <button
+        type="button"
+        id="agregar"
+        aria-expanded="false"
+        aria-controls="opciones"
+      >
+        + Agregar otro número
+      </button>
+      <select id="opciones" aria-label="Otro número disponible" hidden></select>
+      <p id="limite" hidden>Máximo de 3 números por reserva.</p>
       <p id="detalle"></p>
       <form hidden>
         <label
@@ -576,8 +587,9 @@
     <script>
       const $ = (id) => document.getElementById(id);
       let numeros = [],
-        edicion = {},
-        elegido;
+        edicion = {};
+      const seleccion = new Set();
+      let enviando = false;
       const uno = (selector) => document.querySelector(selector);
       const todos = (selector) =>
         Array.from(document.querySelectorAll(selector));
@@ -820,6 +832,56 @@
         sincronizar();
       };
       document.addEventListener("visibilitychange", sincronizar);
+      const formatoNumero = (numero) => String(numero).padStart(3, "0");
+      function mostrarSeleccion() {
+        const disponibles = numeros.filter(
+          (n) => n.estado === "disponible" && !seleccion.has(n.numero),
+        );
+        $("seleccion").replaceChildren(
+          ...Array.from(seleccion, (numero) => {
+            const quitar = document.createElement("button");
+            quitar.type = "button";
+            quitar.textContent = formatoNumero(numero) + " ×";
+            quitar.setAttribute(
+              "aria-label",
+              "Quitar número " + formatoNumero(numero),
+            );
+            quitar.onclick = () => {
+              if (enviando) return;
+              seleccion.delete(numero);
+              mostrarSeleccion();
+              $("agregar").focus();
+            };
+            return quitar;
+          }),
+        );
+        $("opciones").replaceChildren(
+          new Option("Elegí un número", ""),
+          ...disponibles.map(
+            (n) => new Option(formatoNumero(n.numero), n.numero),
+          ),
+        );
+        $("opciones").hidden = true;
+        $("agregar").setAttribute("aria-expanded", "false");
+        $("agregar").hidden = seleccion.size >= 3 || !disponibles.length;
+        $("limite").hidden = seleccion.size < 3;
+        uno("#ficha form").hidden = !edicion.abierta || !seleccion.size;
+      }
+      $("agregar").onclick = () => {
+        if (enviando) return;
+        $("opciones").hidden = !$("opciones").hidden;
+        $("agregar").setAttribute(
+          "aria-expanded",
+          String(!$("opciones").hidden),
+        );
+        if (!$("opciones").hidden) $("opciones").focus();
+      };
+      $("opciones").onchange = () => {
+        if (enviando || !$("opciones").value) return;
+        seleccion.add(Number($("opciones").value));
+        mostrarSeleccion();
+        $("seleccion").lastElementChild.focus();
+      };
       function dibujar() {
         const botones = numeros
           .filter((n) => !$("libres").checked || n.estado === "disponible")
@@ -834,12 +896,13 @@
               "Número " + b.textContent + ", " + n.estado,
             );
             b.onclick = () => {
-              elegido = n.numero;
-              $("elegido").textContent = b.textContent;
+              seleccion.clear();
+              seleccion.add(n.numero);
+              mostrarSeleccion();
               $("detalle").textContent = edicion.abierta
                 ? edicion.instrucciones
                 : "Vista previa. Podés explorar el tablero. Las reservas y los pagos todavía están cerrados.";
-              document.querySelector("form").hidden = !edicion.abierta;
+
               $("resultado").textContent = "";
               $("ficha").showModal();
             };
@@ -875,31 +938,78 @@
         }
       }
       $("libres").onchange = dibujar;
-      document.querySelector(".cerrar").onclick = () => $("ficha").close();
+      const ficha = $("ficha");
+      function cerrarFicha() {
+        if (!enviando) ficha.close();
+      }
+      uno(".cerrar").onclick = cerrarFicha;
+      ficha.oncancel = (evento) => {
+        if (enviando) evento.preventDefault();
+      };
+      ficha.onclick = (evento) => {
+        if (evento.target !== ficha) return;
+        const r = ficha.getBoundingClientRect();
+        if (
+          evento.clientX < r.left ||
+          evento.clientX >= r.right ||
+          evento.clientY < r.top ||
+          evento.clientY >= r.bottom
+        )
+          cerrarFicha();
+      };
       document.querySelector("form").onsubmit = async (e) => {
         e.preventDefault();
         const f = e.currentTarget;
         const b = f.querySelector("button");
+        if (enviando || !seleccion.size) return;
+        enviando = true;
         b.disabled = true;
         try {
           const r = await fetch("/api/reservas", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              numero: elegido,
+              numeros: [...seleccion],
               ...Object.fromEntries(new FormData(f)),
             }),
           });
           const d = await r.json();
-          if (!r.ok) throw Error(d);
+          if (!r.ok) {
+            if (r.status === 409) {
+              await cargar();
+              for (const numero of seleccion) {
+                if (
+                  !numeros.some(
+                    (n) => n.numero === numero && n.estado === "disponible",
+                  )
+                )
+                  seleccion.delete(numero);
+              }
+              mostrarSeleccion();
+            }
+            throw Error(d);
+          }
+          $("agregar").hidden =
+            $("opciones").hidden =
+            $("limite").hidden =
+              true;
+          $("seleccion")
+            .querySelectorAll("button")
+            .forEach((boton) => {
+              boton.disabled = true;
+              boton.textContent = boton.textContent.replace(" ×", "");
+              boton.removeAttribute("aria-label");
+            });
           f.hidden = true;
           f.reset();
           $("resultado").textContent =
-            "Reservado por 24 horas. Guardá tu referencia: " + d.referencia;
+            "Reserva confirmada por 24 horas. Guardá tu referencia: " +
+            d.referencia;
           await cargar();
         } catch (err) {
           $("resultado").textContent = err.message;
         } finally {
+          enviando = false;
           b.disabled = false;
         }
       };

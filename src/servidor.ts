@@ -181,13 +181,23 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     ).first();
     if (!edicion?.abierta || !edicion.instrucciones)
       return json("Las reservas todavía están cerradas.", 403);
-    const { numero, nombre, contacto } = await req.json<{
-      numero: number;
+    const {
+      numero,
+      numeros = numero === undefined ? [] : [numero],
+      nombre,
+      contacto,
+    } = await req.json<{
+      numero?: number;
+      numeros?: number[];
       nombre: string;
       contacto: string;
     }>();
     if (
-      !Number.isInteger(numero) ||
+      !Array.isArray(numeros) ||
+      numeros.length < 1 ||
+      numeros.length > 3 ||
+      !numeros.every((n) => Number.isInteger(n) && n > 0) ||
+      new Set(numeros).size !== numeros.length ||
       typeof nombre !== "string" ||
       nombre.trim().length < 2 ||
       nombre.length > 80 ||
@@ -205,18 +215,32 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       (b) => b.toString(16).padStart(2, "0"),
     ).join("");
     const referencia = crypto.randomUUID();
+    const marcas = numeros.map(() => "?").join(",");
     const resultado = await env.DB.prepare(
-      `UPDATE marco_rifa_numeros SET estado='reservado',nombre=?,contacto=?,origen=?,referencia=?,vence=unixepoch()+86400
-      WHERE edicion=1 AND numero=? AND (${activo})='disponible'
+      `WITH elegibles AS MATERIALIZED (
+        SELECT numero FROM marco_rifa_numeros WHERE edicion=1 AND numero IN (${marcas}) AND (${activo})='disponible'
+      )
+      UPDATE marco_rifa_numeros SET estado='reservado',nombre=?,contacto=?,origen=?,referencia=?,vence=unixepoch()+86400
+      WHERE edicion=1 AND numero IN (SELECT numero FROM elegibles)
+      AND (SELECT count(*) FROM elegibles)=?
       AND EXISTS (SELECT 1 FROM marco_rifa_ediciones WHERE id=1 AND abierta=1 AND instrucciones!='')
-      AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND origen=? AND estado='reservado' AND vence>unixepoch())<3`,
+      AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND origen=? AND estado='reservado' AND vence>unixepoch()) + ? <= 3`,
     )
-      .bind(nombre.trim(), contacto.trim(), origen, referencia, numero, origen)
+      .bind(
+        ...numeros,
+        nombre.trim(),
+        contacto.trim(),
+        origen,
+        referencia,
+        numeros.length,
+        origen,
+        numeros.length,
+      )
       .run();
     return resultado.meta.changes
       ? json({ referencia }, 201)
       : json(
-          "El número ya está ocupado o alcanzaste tres reservas activas.",
+          "Algún número ya está ocupado o la selección supera el límite de tres reservas activas.",
           409,
         );
   }

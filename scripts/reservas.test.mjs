@@ -88,5 +88,23 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async () =
     estado: "pagado",
   });
   assert.equal((await pedir("/api/reservas", reserva)).status, 409);
+  const grupo = (numeros) =>
+    pedir("/api/reservas", {
+      nombre: reserva.nombre,
+      contacto: reserva.contacto,
+      numeros,
+    });
+  assert.equal((await grupo([1, 2])).status, 409);
+  assert.equal((await tablero()).numeros[1].estado, "disponible");
+  assert.equal((await grupo([2, 2])).status, 400);
+  assert.equal((await grupo([2, 3, 4])).status, 201);
+  assert.equal((await grupo([5])).status, 409);
+  const filas = sqlite
+    .prepare(
+      "SELECT referencia FROM marco_rifa_numeros WHERE numero BETWEEN 2 AND 4 AND estado='reservado'",
+    )
+    .all();
+  assert.equal(filas.length, 3);
+  assert.equal(new Set(filas.map((fila) => fila.referencia)).size, 1);
   sqlite.close();
 });

@@ -1406,3 +1406,42 @@ footer nav {
   flex-wrap: wrap;
   justify-content: flex-start;
 }
+
+#titulo-ficha {
+  font:
+    650 26px/1.15 DM,
+    sans-serif;
+  margin: 4px 0 16px;
+}
+#seleccion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+#seleccion button,
+#agregar {
+  float: none;
+  font: inherit;
+  padding: 8px 12px;
+  border: 1px solid var(--negro);
+  border-radius: 6px;
+}
+#seleccion button {
+  background: var(--papel);
+  font-variant-numeric: tabular-nums;
+}
+#agregar {
+  border-style: dashed;
+}
+#opciones {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  margin-top: 8px;
+}
+#detalle,
+#limite {
+  margin-top: 12px;
+}
