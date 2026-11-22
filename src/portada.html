@@ -76,10 +76,13 @@
         </div>
         <div class="paneles" aria-label="Galería de premios">
           <article class="premio p0 activo">
-            <button
+            <a
               class="elegir"
-              aria-label="1.º premio: Plan de 3 meses, Solaz Club. Ver el gimnasio"
-              aria-pressed="true"
+              href="https://www.instagram.com/solaz.club/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="1.º premio: Plan de 3 meses, Solaz Club. Abrir la página de la marca en otra pestaña"
+              aria-current="true"
             >
               <div class="medio">
                 <img class="cubierta" src="/entrenamiento.jpg" alt="" /><img
@@ -90,17 +93,21 @@
               </div>
               <div class="sombra"></div>
               <span class="orden">01</span>
+              <span class="visitar" aria-hidden="true">Ver marca ↗</span>
               <div class="rotulo">
                 <small>Solaz Club</small>
                 <h3>Plan de 3 meses</h3>
               </div>
-            </button>
+            </a>
           </article>
           <article class="premio p1">
-            <button
+            <a
               class="elegir"
-              aria-label="2.º premio: 5 kg, La Granja de Tello. Ver premio"
-              aria-pressed="false"
+              href="https://www.instagram.com/lagranjadetello/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="2.º premio: 5 kg, La Granja de Tello. Abrir la página de la marca en otra pestaña"
+              aria-current="false"
             >
               <div class="medio">
                 <div class="vale">
@@ -111,17 +118,21 @@
               </div>
               <div class="sombra"></div>
               <span class="orden">02</span>
+              <span class="visitar" aria-hidden="true">Ver marca ↗</span>
               <div class="rotulo">
                 <small>La Granja de Tello</small>
                 <h3>5 kg</h3>
               </div>
-            </button>
+            </a>
           </article>
           <article class="premio p2">
-            <button
+            <a
               class="elegir"
-              aria-label="3.º premio: Prenda a elección, UEME. Ver la prenda"
-              aria-pressed="false"
+              href="https://ueme.com.ar/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="3.º premio: Prenda a elección, UEME. Abrir la página de la marca en otra pestaña"
+              aria-current="false"
             >
               <div class="medio">
                 <img
@@ -132,38 +143,21 @@
               </div>
               <div class="sombra"></div>
               <span class="orden">03</span>
+              <span class="visitar" aria-hidden="true">Ver marca ↗</span>
               <div class="rotulo">
                 <small>UEME</small>
                 <h3>Prenda a elección</h3>
               </div>
-            </button>
-          </article>
-          <article class="premio p3">
-            <button
-              class="elegir"
-              aria-label="4.º premio: Desayuno o merienda, Lo de Lola. Ver premio"
-              aria-pressed="false"
-            >
-              <div class="medio">
-                <div class="mesa">
-                  <img src="/lodelola_bar.jpg" alt="Salón de Lo de Lola" /><span
-                    >Para dos</span
-                  >
-                </div>
-              </div>
-              <div class="sombra"></div>
-              <span class="orden">04</span>
-              <div class="rotulo">
-                <small>Lo de Lola</small>
-                <h3>Desayuno o merienda</h3>
-              </div>
-            </button>
+            </a>
           </article>
           <article class="premio p4">
-            <button
+            <a
               class="elegir"
-              aria-label="5.º premio: Proteína + creatina, MAG Suplementos. Ver los productos"
-              aria-pressed="false"
+              href="https://www.instagram.com/magsuplementos.oficial/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="4.º premio: Proteína + creatina, MAG Suplementos. Abrir la página de la marca en otra pestaña"
+              aria-current="false"
             >
               <div class="medio">
                 <div class="productos">
@@ -174,12 +168,38 @@
                 </div>
               </div>
               <div class="sombra"></div>
-              <span class="orden">05</span>
+              <span class="orden">04</span>
+              <span class="visitar" aria-hidden="true">Ver marca ↗</span>
               <div class="rotulo">
                 <small>MAG Suplementos</small>
                 <h3>Proteína + creatina</h3>
               </div>
-            </button>
+            </a>
+          </article>
+          <article class="premio p3">
+            <a
+              class="elegir"
+              href="https://www.instagram.com/lodelola_bar/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="5.º premio: Desayuno o merienda, Lo de Lola. Abrir la página de la marca en otra pestaña"
+              aria-current="false"
+            >
+              <div class="medio">
+                <div class="mesa">
+                  <img src="/lodelola_bar.jpg" alt="Salón de Lo de Lola" /><span
+                    >Para dos</span
+                  >
+                </div>
+              </div>
+              <div class="sombra"></div>
+              <span class="orden">05</span>
+              <span class="visitar" aria-hidden="true">Ver marca ↗</span>
+              <div class="rotulo">
+                <small>Lo de Lola</small>
+                <h3>Desayuno o merienda</h3>
+              </div>
+            </a>
           </article>
         </div>
         <div class="detalle">
@@ -355,8 +375,8 @@
         "Tres meses de entrenamiento en Solaz Club.",
         "5 kg de La Granja de Tello.",
         "Una prenda a elección de UEME. Foto de catálogo ilustrativa.",
-        "Un desayuno o una merienda para dos personas en Lo de Lola.",
         "Una proteína y una creatina MAG. Envases de catálogo ilustrativos.",
+        "Un desayuno o una merienda para dos personas en Lo de Lola.",
       ];
       let actual = 0;
       function activar(indice, desplazar = false) {
@@ -364,13 +384,13 @@
         premios.forEach((premio, i) => {
           premio.classList.toggle("activo", actual === i);
           premio
-            .querySelector("button")
-            .setAttribute("aria-pressed", actual === i);
+            .querySelector(".elegir")
+            .setAttribute("aria-current", actual === i);
         });
         premios[0].classList.toggle("abierto", actual === 0);
         uno("#contador").textContent = "0" + (actual + 1) + " / 05";
         uno("#descripcion").textContent = descripciones[actual];
-        uno("#selector").hidden = actual !== 4;
+        uno("#selector").hidden = !premios[actual].classList.contains("p4");
         if (desplazar && movil.matches) {
           const tarjeta = premios[actual].getBoundingClientRect();
           galeria.scrollBy({
@@ -383,18 +403,17 @@
         }
       }
       premios.forEach((premio, i) => {
-        const boton = premio.querySelector("button");
-        boton.onpointerenter = (e) => {
+        const enlace = premio.querySelector(".elegir");
+        enlace.onpointerenter = (e) => {
           if (e.pointerType === "mouse" && !movil.matches) activar(i);
         };
-        boton.onfocus = () => activar(i);
-        boton.onclick = () => activar(i, true);
-        boton.onkeydown = (e) => {
+        enlace.onfocus = () => activar(i);
+        enlace.onkeydown = (e) => {
           if (["ArrowLeft", "ArrowRight"].includes(e.key)) {
             e.preventDefault();
             activar(i + (e.key === "ArrowRight" ? 1 : -1), true);
             premios[actual]
-              .querySelector("button")
+              .querySelector(".elegir")
               .focus({ preventScroll: true });
           }
         };
