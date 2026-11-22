@@ -33,21 +33,6 @@ async function enviar(ruta, opciones) {
   const datos = await respuesta.json();
   if (!datos.success) throw new Error(JSON.stringify(datos.errors));
 }
-// D1 conserva los números existentes. Reanudar una publicación parcialmente aplicada es seguro.
-const consultaD1 = async (sql, params = []) => {
-  const url = base.replace("/workers/scripts/marco-rifa", "/d1/database/" + metadata.bindings[0].id + "/query");
-  const respuesta = await fetch(url, { method: "POST", headers: {
-    Authorization: "Bearer " + process.env.CLOUDFLARE_API_TOKEN, "Content-Type": "application/json",
-  }, body: JSON.stringify({ sql, params }) });
-  const datos = await respuesta.json();
-  if (!datos.success) throw Error("No se pudo preparar D1: " + JSON.stringify(datos.errors));
-  return datos.result[0].results;
-};
-const columnas = await consultaD1("PRAGMA table_info(marco_rifa_numeros)");
-for (const [nombre, tipo] of [["apellido", "TEXT"], ["fase", "TEXT"], ["version", "INTEGER NOT NULL DEFAULT 0"]]) {
-  if (!columnas.some(c => c.name === nombre))
-    await consultaD1("ALTER TABLE marco_rifa_numeros ADD COLUMN " + nombre + " " + tipo);
-}
 await enviar("", { method: "PUT", body: formulario });
 await enviar("/subdomain", {
   method: "POST",
