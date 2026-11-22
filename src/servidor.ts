@@ -160,7 +160,22 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     });
   }
   if (leer && ruta === "/favicon.svg") return recurso(icono, "image/svg+xml");
-  if (leer && ruta === "/") return recurso(portada, "text/html");
+  if (leer && ruta === "/") {
+    const original = recurso(portada, "text/html");
+    const cambios = await env.DB.prepare(
+      "SELECT encabezado,destacado,descripcion,historia FROM marco_rifa_portada WHERE edicion=1",
+    ).first<Record<string,string>>().catch(() => null);
+    if (!cambios) return original;
+    const selectores: Record<string,string> = {
+      encabezado: "#portada h1 span", destacado: "#portada h1 strong",
+      descripcion: "#portada .mensaje > p", historia: ".historia > div > p",
+    };
+    const html = new HTMLRewriter();
+    for (const [campo, selector] of Object.entries(selectores)) {
+      if (cambios[campo]) html.on(selector, {element(elemento) { elemento.setInnerContent(cambios[campo]); }});
+    }
+    return html.transform(original);
+  }
   if (leer && ruta === "/pista.css") return recurso(pista, "text/css");
   if (leer && ruta === "/estilos.css") return recurso(estilos, "text/css");
   if (leer && ruta === "/solaz.svg") return recurso(solaz, "image/svg+xml");
