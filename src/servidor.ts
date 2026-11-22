@@ -18,6 +18,8 @@ import mag from "../originales/magsuplementos.oficial.jpg";
 import pista from "./pista.css";
 import club from "../originales/club.webp";
 import entrenamiento from "../originales/entrenamiento.jpg";
+import remeraGris from "../originales/remera-gris.webp";
+import mascaraRemera from "../originales/mascara-remera.png";
 import prenda from "../originales/prenda.webp";
 import proteina from "../originales/proteina.png";
 import creatina from "../originales/creatina.png";
@@ -30,6 +32,8 @@ const imagenes = new Map<string, [Uint8Array, string]>([
   ["/portada-social.jpg", [portadaSocial, "image/jpeg"]],
   ["/club.webp", [club, "image/webp"]],
   ["/entrenamiento.jpg", [entrenamiento, "image/jpeg"]],
+  ["/remera-gris.webp", [remeraGris, "image/webp"]],
+  ["/mascara-remera.png", [mascaraRemera, "image/png"]],
   ["/prenda.webp", [prenda, "image/webp"]],
   ["/proteina.png", [proteina, "image/png"]],
   ["/creatina.png", [creatina, "image/png"]],

@@ -990,15 +990,30 @@ dialog .boton {
   width: clamp(70px, 8vw, 120px);
   aspect-ratio: 4/3;
   object-fit: cover;
-  border: 5px solid var(--papel);
-  border-bottom-width: 12px;
+  border: 0;
+}
+.remera-gris,
+.medio > .remera-gris {
+  object-fit: contain;
+  mask: url(/mascara-remera.png) center / contain no-repeat;
+}
+.p2 .medio {
+  background: var(--negro);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .postal {
+    transition: transform 240ms ease-out;
+  }
+  .historia .postal:hover {
+    transform: translateY(-4px) rotate(0) scale(1.09);
+  }
 }
 .postal-club {
   transform: rotate(-7deg);
 }
 .postal-prenda {
   transform: rotate(7deg);
-  object-position: 50% 35%;
+  height: clamp(96px, 10vw, 148px);
 }
 @media (max-width: 760px) {
   .historia {
