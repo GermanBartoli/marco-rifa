@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import worker from "../dist/worker.mjs";
 
-test("Edición, disponibilidad, vencimiento y confirmación de pago", async () => {
+test("Edición, disponibilidad, vencimiento y confirmación de pago", async t => {
+  let instante = "2026-11-22T11:00:00Z";
+  t.mock.method(Date, "now", () => Date.parse(instante));
   const sqlite = new DatabaseSync(":memory:");
   const DB = {
     prepare(sql) {
@@ -58,6 +60,11 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async () =
   sqlite.exec(
     "UPDATE marco_rifa_ediciones SET abierta=1,instrucciones='Prueba local'",
   );
+  for (const hora of ["2026-11-22T10:59:59Z","2026-11-23T01:00:00Z"]) {
+    instante = hora;
+    assert.equal((await pedir("/api/reservas", reserva)).status, 403);
+  }
+  instante = "2026-11-23T00:59:59Z";
   const res = await pedir("/api/reservas", reserva);
   assert.equal(res.status, 201);
   const { referencia } = await res.json();
@@ -87,7 +94,7 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async () =
   );
   assert.deepEqual((await tablero()).numeros[0], {
     numero: 1,
-    estado: "pagado",
+    estado: "pagado", titular: "P****",
   });
   assert.equal((await pedir("/api/reservas", reserva)).status, 409);
   const grupo = (numeros) =>
@@ -100,7 +107,24 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async () =
   assert.equal((await tablero()).numeros[1].estado, "disponible");
   assert.equal((await grupo([2, 2])).status, 400);
   assert.equal((await grupo([2, 3, 4])).status, 201);
-  assert.equal((await grupo([5])).status, 409);
+  assert.equal((await grupo([5])).status, 201);
+  assert.equal((await grupo([6])).status, 409);
+  assert.equal((await grupo([6,7,8,9,10,11])).status, 400);
+  const otro = await pedir("/api/reservas", {numeros:[6,7,8,9,10], nombre:"Ana", apellido:"Ríos", contacto:"3511234567"});
+  assert.equal(otro.status, 201);
+  const datos = await otro.json();
+  assert.equal(datos.total, 35000);
+  assert.equal((await pedir("/api/reservas", {numero:11,nombre:"Ana",contacto:"+54 9 3511234567"})).status, 409);
+  const inicial = (await (await pedir("/admin/reservas", undefined, true)).json()).find(n => n.numero === 6);
+  const ahora = sqlite.prepare("SELECT unixepoch() AS ahora").get().ahora;
+  assert.ok(inicial.vence - ahora <= 3600 && inicial.vence - ahora >= 3598);
+  assert.equal(inicial.estado, "apartado");
+  for (const [indice, [accion, esperado]] of [["reservar","reservado"],["revisar","revision"],["pagar","pagado"]].entries()) {
+    const cambio = {numero:6,referencia:datos.referencia,accion,version:inicial.version+indice,nombre:"María",apellido:"Paz",contacto:inicial.contacto};
+    assert.equal((await pedir("/admin/actualizar",cambio,true)).status,200);
+    assert.equal((await pedir("/admin/actualizar",cambio,true)).status,409);
+    assert.deepEqual((await tablero()).numeros[5],{numero:6, estado:esperado,titular:"M**** P****"});
+  }
   const filas = sqlite
     .prepare(
       "SELECT referencia FROM marco_rifa_numeros WHERE numero BETWEEN 2 AND 4 AND estado='reservado'",

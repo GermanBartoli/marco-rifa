@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS marco_rifa_numeros (
   numero INTEGER NOT NULL, estado TEXT NOT NULL DEFAULT 'disponible'
     CHECK (estado IN ('disponible','reservado','pagado')),
   referencia TEXT, nombre TEXT, contacto TEXT, origen TEXT, vence INTEGER,
+  apellido TEXT, fase TEXT, version INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY(edicion,numero)
 );
 CREATE TABLE IF NOT EXISTS marco_rifa_marcas (

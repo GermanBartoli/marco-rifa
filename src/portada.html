@@ -334,14 +334,20 @@
       </section>
       <section id="numeros" class="ancho bloque tablero">
         <h2>Elegí tu número<span>.</span></h2>
+        <ol class="pasos-reserva">
+          <li>Elegí hasta 5 números y tocá <strong>Siguiente</strong>. Podés reservar de 08:00 a 22:00 (Argentina).</li>
+          <li>Revisá el monto y completá tus datos. Al confirmar, los números quedan apartados durante una hora.</li>
+          <li>Transferí el total y adjuntá el comprobante en el chat de WhatsApp de Marco. Marco actualizará el estado.</li>
+        </ol>
+        <div id="leyenda" class="leyenda-estados"></div>
         <p id="modo">Cargando edición…</p>
         <div class="barra">
           <b id="cuenta"></b
           ><label><input type="checkbox" id="libres" /> Solo disponibles</label>
         </div>
         <div id="paso-tablero" hidden>
-          <span>Elegí otro número del tablero.</span>
-          <button id="revisar" type="button">Volver a mi selección</button>
+          <span>Tu selección: <strong id="resumen"></strong></span>
+          <button id="revisar" type="button">Siguiente</button>
         </div>
         <div id="grilla" class="grilla"></div>
         <p role="status" id="aviso"></p>
@@ -553,25 +559,26 @@
       <button type="button" id="agregar" aria-controls="grilla">
         + Agregar otro número
       </button>
-      <p id="limite" hidden>Máximo de 3 números por reserva.</p>
+      <p id="limite" hidden>Máximo de 5 números por persona.</p>
       <p id="detalle"></p>
       <form hidden>
         <label
           >Nombre<input
             name="nombre"
             required
-            minlength="2"
+            minlength="1"
             maxlength="80"
-            autocomplete="name" /></label
+            autocomplete="given-name" /></label
         ><label
-          >WhatsApp o teléfono<input
+          >Apellido (opcional)<input name="apellido" maxlength="80" autocomplete="family-name" /></label><label>WhatsApp<input
             name="contacto"
             type="tel"
             required
             maxlength="24"
             autocomplete="tel" /></label
-        ><button class="boton">Reservar por 24 horas</button>
+        ><button class="boton">Apartar por una hora y abrir WhatsApp</button>
       </form>
+      <a id="chat-reserva" target="_blank" rel="noopener noreferrer" hidden>Abrir WhatsApp de Marco para adjuntar el comprobante ↗</a>
       <p id="resultado" role="status"></p>
     </dialog>
     <script>
@@ -825,199 +832,127 @@
       reducir.addEventListener("change", sincronizar);
       document.addEventListener("visibilitychange", sincronizar);
       const formatoNumero = (numero) => String(numero).padStart(3, "0");
-      function mostrarSeleccion() {
-        const disponibles = numeros.filter(
-          (n) => n.estado === "disponible" && !seleccion.has(n.numero),
-        );
-        $("seleccion").replaceChildren(
-          ...Array.from(seleccion, (numero) => {
-            const quitar = document.createElement("button");
-            quitar.type = "button";
-            quitar.textContent = formatoNumero(numero);
-            quitar.setAttribute(
-              "aria-label",
-              "Quitar número " + formatoNumero(numero),
-            );
-            quitar.onclick = () => {
-              if (enviando) return;
-              seleccion.delete(numero);
-              mostrarSeleccion();
-              $("agregar").focus();
-            };
-            return quitar;
-          }),
-        );
-        $("agregar").hidden = seleccion.size >= 3 || !disponibles.length;
-        $("limite").hidden = seleccion.size < 3;
-        uno("#ficha form").hidden = !edicion.abierta || !seleccion.size;
+      const estados = /*ESTADOS*/null;
+      const ficha = $("ficha"), formulario = ficha.querySelector("form");
+      const dinero = n => "$" + n.toLocaleString("es-AR");
+      const listaElegida = () => [...seleccion].map(formatoNumero).join(", ");
+      const disponibleAhora = () => edicion.abierta && edicion.enHorario;
+      for (const [clave, texto] of Object.entries(estados)) {
+        const etiqueta = document.createElement("span");
+        etiqueta.className = "etiqueta " + clave;
+        etiqueta.textContent = texto;
+        $("leyenda").append(etiqueta);
       }
-      $("agregar").onclick = () => {
-        if (enviando) return;
-        ficha.close();
-        $("paso-tablero").hidden = false;
-        $("libres").checked = false;
+      function sincronizarSeleccion() {
+        $("paso-tablero").hidden = !seleccion.size;
+        $("resumen").textContent = listaElegida();
+        $("seleccion").textContent = listaElegida();
+        $("agregar").hidden = seleccion.size >= 5;
+        $("limite").hidden = seleccion.size < 5;
+        formulario.hidden = !seleccion.size || !disponibleAhora();
+        $("detalle").textContent = seleccion.size
+          ? "Total: " + dinero(seleccion.size * edicion.precio) + ". " + ($("modo").textContent) +
+            (disponibleAhora() ? " " + edicion.instrucciones : "") : "";
         dibujar();
-        $("revisar").focus({ preventScroll: true });
-        $("paso-tablero").scrollIntoView({
-          block: "start",
-          behavior: reducir.matches ? "instant" : "smooth",
-        });
-      };
-      function abrirSeleccion() {
-        $("paso-tablero").hidden = true;
-        mostrarSeleccion();
-        $("detalle").textContent = edicion.abierta
-          ? edicion.instrucciones
-          : "Vista previa. Podés explorar el tablero. Las reservas y los pagos todavía están cerrados.";
-        $("resultado").textContent = "";
-        ficha.showModal();
       }
-      $("revisar").onclick = abrirSeleccion;
       function dibujar() {
-        const botones = numeros
-          .filter((n) => !$("libres").checked || n.estado === "disponible")
-          .map((n) => {
-            const b = document.createElement("button");
-            b.textContent = String(n.numero).padStart(3, "0");
-            b.className = n.estado;
-            b.disabled = n.estado !== "disponible";
-            const marcado =
-              !$("paso-tablero").hidden && seleccion.has(n.numero);
-            b.classList.toggle("marcado", marcado);
-            b.title = marcado ? "Ya elegido" : n.estado;
-            b.setAttribute(
-              "aria-label",
-              "Número " + b.textContent + ", " + b.title,
-            );
-            b.onclick = () => {
-              if ($("paso-tablero").hidden) seleccion.clear();
-              seleccion.add(n.numero);
-              abrirSeleccion();
-            };
-            return b;
-          });
+        const botones = numeros.filter(n => !$("libres").checked || n.estado === "disponible").map(n => {
+          const b = document.createElement("button");
+          b.textContent = formatoNumero(n.numero);
+          b.className = n.estado;
+          const marcado = seleccion.has(n.numero);
+          b.classList.toggle("marcado", marcado);
+          b.setAttribute("aria-pressed", String(marcado));
+          b.setAttribute("aria-disabled", String(n.estado !== "disponible"));
+          b.title = [estados[n.estado], n.titular].filter(Boolean).join(" · ");
+          b.setAttribute("aria-label", "Número " + b.textContent + ", " + b.title);
+          b.onclick = () => {
+            if (n.estado !== "disponible" || enviando) { $("aviso").textContent = b.title; return; }
+            if (marcado) seleccion.delete(n.numero);
+            else if (seleccion.size < 5) seleccion.add(n.numero);
+            else { $("aviso").textContent = "Ya elegiste cinco números."; return; }
+            $("aviso").textContent = "";
+            sincronizarSeleccion();
+            enfocarNumero(n.numero);
+          };
+          b.dataset.numero = n.numero;
+          return b;
+        });
         $("grilla").replaceChildren(...botones);
       }
+      function enfocarNumero(numero) {
+        $("grilla").querySelector('[data-numero="' + numero + '"]')?.focus({ preventScroll: true });
+      }
+      let cargando = false;
       async function cargar() {
+        if (cargando) return;
+        cargando = true;
         try {
           const r = await fetch("/api/tablero");
           if (!r.ok) throw Error();
           const d = await r.json();
           numeros = d.numeros;
           edicion = d.edicion;
-          if (!$("paso-tablero").hidden) {
-            for (const numero of seleccion) {
-              if (
-                !numeros.some(
-                  (n) => n.numero === numero && n.estado === "disponible",
-                )
-              )
-                seleccion.delete(numero);
-            }
-          }
-          $("modo").textContent = edicion.abierta
-            ? "Elegí un número disponible para reservarlo."
-            : "Vista previa · Las reservas y los pagos todavía están cerrados.";
-          $("cuenta").textContent =
-            numeros.filter((n) => n.estado === "disponible").length +
-            " de " +
-            numeros.length +
-            " disponibles";
-          $("aviso").textContent = "";
-          const foco = document.activeElement?.getAttribute("aria-label");
-          dibujar();
-          if (foco)
-            Array.from($("grilla").children)
-              .find((b) => b.getAttribute("aria-label") === foco)
-              ?.focus({ preventScroll: true });
+          const foco = document.activeElement?.dataset.numero;
+          const ocupados = [...seleccion].filter(numero => !numeros.some(n => n.numero === numero && n.estado === "disponible"));
+          ocupados.forEach(n => seleccion.delete(n));
+          $("modo").textContent = !edicion.abierta ? "La edición está cerrada." :
+            edicion.enHorario ? "Reservas abiertas." : "Fuera de horario. Volvé a partir de las 08:00 de Argentina.";
+          $("cuenta").textContent = numeros.filter(n => n.estado === "disponible").length + " de " + numeros.length + " disponibles";
+          if (ocupados.length) $("aviso").textContent = "Ya se ocuparon: " + ocupados.map(formatoNumero).join(", ");
+          if (!$("chat-reserva").hidden && ficha.open) dibujar();
+          else sincronizarSeleccion();
+          if (foco) enfocarNumero(foco);
         } catch {
-          $("aviso").textContent =
-            "No se pudo actualizar el tablero. Reintentando…";
-        }
+          $("aviso").textContent = "No se pudo actualizar el tablero. Reintentando…";
+        } finally { cargando = false; }
       }
       $("libres").onchange = dibujar;
-      const ficha = $("ficha");
-      function cerrarFicha() {
-        if (!enviando) ficha.close();
-      }
-      ficha.onclose = () => {
-        if ($("paso-tablero").hidden) {
-          for (const boton of $("grilla").querySelectorAll(".marcado")) {
-            boton.classList.remove("marcado");
-            boton.title = "disponible";
-            boton.setAttribute(
-              "aria-label",
-              "Número " + boton.textContent + ", disponible",
-            );
-          }
-        }
+      $("revisar").onclick = () => {
+        $("chat-reserva").hidden = true;
+        $("resultado").textContent = "";
+        sincronizarSeleccion();
+        ficha.showModal();
       };
-      uno(".cerrar").onclick = cerrarFicha;
-      ficha.oncancel = (evento) => {
-        if (enviando) evento.preventDefault();
-      };
-      ficha.onclick = (evento) => {
-        if (evento.target !== ficha) return;
+      $("agregar").onclick = ficha.querySelector(".cerrar").onclick = () => { if (!enviando) ficha.close(); };
+      ficha.oncancel = e => { if (enviando) e.preventDefault(); };
+      ficha.onclick = e => {
         const r = ficha.getBoundingClientRect();
-        if (
-          evento.clientX < r.left ||
-          evento.clientX >= r.right ||
-          evento.clientY < r.top ||
-          evento.clientY >= r.bottom
-        )
-          cerrarFicha();
+        if (!enviando && e.target === ficha && (e.clientX < r.left || e.clientX >= r.right ||
+          e.clientY < r.top || e.clientY >= r.bottom)) ficha.close();
       };
-      document.querySelector("form").onsubmit = async (e) => {
+      ficha.onclose = sincronizarSeleccion;
+      formulario.onsubmit = async e => {
         e.preventDefault();
-        const f = e.currentTarget;
-        const b = f.querySelector("button");
         if (enviando || !seleccion.size) return;
         enviando = true;
-        b.disabled = true;
+        const boton = formulario.querySelector("button");
+        boton.disabled = true;
+        const elegidos = [...seleccion], datos = Object.fromEntries(new FormData(formulario));
         try {
           const r = await fetch("/api/reservas", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              numeros: [...seleccion],
-              ...Object.fromEntries(new FormData(f)),
-            }),
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ numeros: elegidos, ...datos }),
           });
           const d = await r.json();
-          if (!r.ok) {
-            if (r.status === 409) {
-              await cargar();
-              for (const numero of seleccion) {
-                if (
-                  !numeros.some(
-                    (n) => n.numero === numero && n.estado === "disponible",
-                  )
-                )
-                  seleccion.delete(numero);
-              }
-              mostrarSeleccion();
-            }
-            throw Error(d);
-          }
-          $("agregar").hidden = $("limite").hidden = true;
-          $("seleccion")
-            .querySelectorAll("button")
-            .forEach((boton) => {
-              boton.disabled = true;
-              boton.removeAttribute("aria-label");
-            });
-          f.hidden = true;
-          f.reset();
-          $("resultado").textContent =
-            "Reserva confirmada por 24 horas. Guardá tu referencia: " +
-            d.referencia;
+          if (!r.ok) { await cargar(); throw Error(d); }
+          const lista = elegidos.map(formatoNumero).join(", ");
+          const mensaje = "Hola, Marco. Soy " + [datos.nombre, datos.apellido].filter(Boolean).join(" ") +
+            ". Aparté los números " + lista + " por " + dinero(d.total) + ". Te envío el comprobante. Ref. " + d.referencia;
+          const chat = $("chat-reserva");
+          chat.href = "https://wa.me/5493516776352?text=" + encodeURIComponent(mensaje);
+          seleccion.clear();
+          sincronizarSeleccion();
+          formulario.reset();
+          $("seleccion").textContent = lista;
+          $("agregar").hidden = true;
+          $("detalle").textContent = "Total: " + dinero(d.total) + ". " + edicion.instrucciones;
+          $("resultado").textContent = "Apartados por una hora. Adjuntá el comprobante en WhatsApp.";
+          chat.hidden = false;
           await cargar();
-        } catch (err) {
-          $("resultado").textContent = err.message;
-        } finally {
-          enviando = false;
-          b.disabled = false;
-        }
+          location.assign(chat.href);
+        } catch (err) { $("resultado").textContent = err.message; }
+        finally { enviando = false; boton.disabled = false; }
       };
       cargar();
       setInterval(() => {

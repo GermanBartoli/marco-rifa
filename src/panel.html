@@ -17,76 +17,90 @@
       <p>Confirmá cada pago después de verificar la acreditación.</p>
       <button id="actualizar">Actualizar</button>
       <p id="estado" role="status"></p>
-      <div id="lista"></div>
+      <div id="leyenda" class="leyenda-estados"></div>
+      <div id="tablero-marco" class="grilla" aria-label="Estado de los números"></div>
+      <form id="comprador" hidden>
+        <h3 id="titulo"></h3><p id="vencimiento"></p>
+        <label>Nombre<input name="nombre" required maxlength="80"></label>
+        <label>Apellido (opcional)<input name="apellido" maxlength="80"></label>
+        <label>WhatsApp<input type="tel" name="contacto" required maxlength="24"></label>
+        <label>Estado<select name="accion">
+          <option value="guardar">Conservar estado</option><option value="reservar">Reservado por Marco</option>
+          <option value="revisar">Comprobante en revisión</option><option value="pagar">Vendido</option>
+          <option value="liberar">Liberar número</option>
+        </select></label>
+        <button>Guardar</button>
+      </form>
     </section>
   </main>
   <script>
-    const lista = document.getElementById("lista"),
-      estado = document.getElementById("estado");
+    const estados = /*ESTADOS*/null;
+    const obtener = id => document.getElementById(id);
+    const formulario = obtener("comprador"), aviso = obtener("estado");
+    let actual, guardando = false, lectura = 0;
+    for (const [clave, texto] of Object.entries(estados)) {
+      const etiqueta = document.createElement("span");
+      etiqueta.className = "etiqueta " + clave;
+      etiqueta.textContent = texto;
+      obtener("leyenda").append(etiqueta);
+    }
+    function editar(fila) {
+      actual = fila;
+      formulario.hidden = fila.estado === "disponible";
+      if (formulario.hidden) { aviso.textContent = "Número " + fila.numero + " disponible."; return; }
+      aviso.textContent = "";
+      obtener("titulo").textContent = "Número " + fila.numero + " · " + estados[fila.estado];
+      obtener("vencimiento").textContent = fila.vence ? "Apartado hasta " +
+        new Date(fila.vence * 1000).toLocaleString("es-AR", {timeZone: "America/Argentina/Buenos_Aires"}) + " (Argentina)" : "";
+      for (const campo of ["nombre", "apellido", "contacto"]) formulario.elements[campo].value = fila[campo] || "";
+      formulario.elements.accion.value = "guardar";
+      formulario.scrollIntoView({block: "nearest"});
+    }
     async function cargar() {
+      const turno = ++lectura;
       try {
         const r = await fetch("/panel/rifa/reservas");
         if (!r.ok) throw Error();
         const filas = await r.json();
-        lista.replaceChildren();
-        estado.textContent = filas.length
-          ? ""
-          : "Todavía no hay reservas ni pagos.";
-        for (const fila of filas) {
-          const a = document.createElement("article"),
-            titulo = document.createElement("h3"),
-            p = document.createElement("p");
-          titulo.textContent = "#" + fila.numero + " · " + fila.nombre;
-          p.textContent = [
-            fila.estado,
-            fila.contacto,
-            fila.referencia,
-            fila.vence
-              ? "Vence " + new Date(fila.vence * 1000).toLocaleString("es-AR")
-              : "",
-          ]
-            .filter(Boolean)
-            .join(" · ");
-          a.append(titulo, p);
-          if (fila.estado === "reservado") {
-            for (const [accion, texto] of [
-              ["pagar", "Confirmar pago"],
-              ["liberar", "Liberar número"],
-            ]) {
-              const b = document.createElement("button");
-              b.textContent = texto;
-              b.onclick = async () => {
-                if (!confirm(texto + " para el número " + fila.numero + "?"))
-                  return;
-                b.disabled = true;
-                try {
-                  const res = await fetch("/panel/rifa/actualizar", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      numero: fila.numero,
-                      referencia: fila.referencia,
-                      accion,
-                    }),
-                  });
-                  if (!res.ok) throw Error(await res.json());
-                  await cargar();
-                } catch (e) {
-                  estado.textContent = e.message;
-                } finally {
-                  b.disabled = false;
-                }
-              };
-              a.append(b);
-            }
+        if (turno !== lectura) return;
+        obtener("tablero-marco").replaceChildren(...filas.map(fila => {
+          const b = document.createElement("button");
+          b.textContent = String(fila.numero).padStart(3, "0");
+          b.className = fila.estado;
+          b.title = [estados[fila.estado], fila.nombre, fila.apellido].filter(Boolean).join(" · ");
+          b.setAttribute("aria-label", b.textContent + ", " + b.title);
+          b.onclick = () => { if (!guardando) editar(fila); };
+          return b;
+        }));
+        if (actual && !formulario.hidden) {
+          const fila = filas.find(f => f.numero === actual.numero);
+          if (fila?.version !== actual.version || fila?.referencia !== actual.referencia) {
+            formulario.hidden = true;
+            aviso.textContent = "Este número cambió. Seleccionalo de nuevo para editar.";
           }
-          lista.append(a);
         }
-      } catch {
-        estado.textContent = "No pudimos cargar las reservas.";
-      }
+      } catch { aviso.textContent = "No pudimos cargar el tablero."; }
     }
-    document.getElementById("actualizar").onclick = cargar;
+    formulario.onsubmit = async e => {
+      e.preventDefault();
+      if (guardando || !actual) return;
+      const campos = Object.fromEntries(new FormData(formulario));
+      if (campos.accion === "liberar" && !confirm("¿Liberar el número " + actual.numero + "?")) return;
+      guardando = true;
+      try {
+        const r = await fetch("/panel/rifa/actualizar", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({...campos, numero:actual.numero, referencia:actual.referencia, version:actual.version}),
+        });
+        if (!r.ok) throw Error(await r.json());
+        formulario.hidden = true;
+        actual = null;
+        aviso.textContent = "Cambios guardados.";
+      } catch (error) { aviso.textContent = error.message; }
+      finally { guardando = false; await cargar(); }
+    };
+    obtener("actualizar").onclick = cargar;
     cargar();
+    setInterval(() => { if (!document.hidden && !guardando) cargar(); }, 30000);
   </script>
 </html>

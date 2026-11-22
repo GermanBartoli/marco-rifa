@@ -4,6 +4,7 @@ import miniatura from "../originales/marco-rifa-social.jpg";
 import icono from "./favicon.svg";
 import panel from "./panel.html";
 import estilos from "./estilos.css";
+import colores from "./estados.css";
 import esquema from "../db/inicial.sql";
 import pose from "../originales/marco-fondo-gris.png";
 import foto from "./marco.webp";
@@ -68,8 +69,35 @@ const recurso = (texto: string, tipo: string) =>
   new Response(texto, {
     headers: { ...cabeceras, "Content-Type": tipo + "; charset=utf-8" },
   });
-const activo =
-  "CASE WHEN estado='reservado' AND vence<=unixepoch() THEN 'disponible' ELSE estado END";
+const estados = {
+  disponible: "Disponible", apartado: "Apartado por una hora", reservado: "Reservado por Marco",
+  revision: "Comprobante en revisión", pagado: "Vendido",
+};
+const precio = 7000;
+const activo = `CASE WHEN estado='reservado' AND vence<=unixepoch() THEN 'disponible'
+  WHEN estado='reservado' THEN coalesce(fase,'apartado') ELSE estado END`;
+const horaArgentina = new Intl.DateTimeFormat("es-AR", {
+  timeZone: "America/Argentina/Buenos_Aires", hour: "2-digit", hourCycle: "h23",
+});
+function enHorario() {
+  const hora = Number(horaArgentina.format(Date.now()));
+  return hora >= 8 && hora < 22;
+}
+function telefono(valor: unknown) {
+  if (typeof valor !== "string" || !/^\+?[\d ()-]{7,24}$/.test(valor)) return "";
+  let digitos = valor.replace(/\D/g, "");
+  if (digitos.startsWith("00")) digitos = digitos.slice(2);
+  if (/^0?\d{10}$/.test(digitos)) digitos = "549" + digitos.slice(-10);
+  if (/^54\d{10}$/.test(digitos)) digitos = "549" + digitos.slice(2);
+  return /^\d{7,15}$/.test(digitos) ? digitos : "";
+}
+function datosComprador(nombre: unknown, apellido: unknown, contacto: unknown) {
+  if (typeof nombre !== "string" || !nombre.trim() || nombre.length > 80 ||
+      typeof apellido !== "string" || apellido.length > 80 || !telefono(contacto)) return null;
+  return { nombre: nombre.trim(), apellido: apellido.trim(), contacto: telefono(contacto) };
+}
+const enmascarar = (nombre: string) => nombre.trim().split(/\s+/u).filter(Boolean)
+  .map(parte => Array.from(parte)[0] + "****").join(" ");
 
 async function huella(texto: string) {
   return new Uint8Array(
@@ -104,7 +132,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
           "WWW-Authenticate": 'Basic realm="Marco Rifa", charset="UTF-8"',
         },
       });
-    if (leer && ruta === "/admin") return recurso(panel, "text/html");
+    if (leer && ruta === "/admin") return recurso(panel.replace("/*ESTADOS*/null", JSON.stringify(estados)), "text/html");
     if (ejecutar && ruta === "/admin/inicializar") {
       const consultas = esquema
         .split(";")
@@ -114,31 +142,47 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       return json("Edición preparada.");
     }
     if (leer && ruta === "/admin/reservas") {
-      return json(
-        (
-          await env.DB.prepare(
-            `SELECT numero,nombre,contacto,referencia,estado,vence FROM marco_rifa_numeros WHERE edicion=1 AND (${activo})!='disponible' ORDER BY numero`,
-          ).all()
-        ).results,
-      );
+      const filas = await env.DB.prepare(
+        `SELECT numero,nombre,apellido,contacto,referencia,${activo} AS estado,vence,version
+         FROM marco_rifa_numeros WHERE edicion=1 ORDER BY numero`,
+      ).all();
+      return json(filas.results.map(fila => fila.estado === "disponible"
+        ? { numero: fila.numero, estado: fila.estado } : fila));
     }
     if (ejecutar && ruta === "/admin/actualizar") {
-      const { numero, referencia, accion } = await req.json<{
-        numero: number;
-        referencia: string;
-        accion: string;
-      }>();
-      if (!["pagar", "liberar"].includes(accion))
+      const datos = await req.json<{ numero: number; referencia: string; accion: string;
+        version?: number; nombre?: string; apellido?: string; contacto?: string }>();
+      const { numero, referencia, accion } = datos;
+      if (!["reservar", "revisar", "pagar", "liberar", "guardar"].includes(accion))
         return json("Acción inválida.", 400);
-      const cambio =
-        accion === "pagar"
-          ? "estado='pagado', vence=NULL"
-          : "estado='disponible', referencia=NULL, nombre=NULL, contacto=NULL, origen=NULL, vence=NULL";
+      const editar = datos.nombre !== undefined || datos.apellido !== undefined || datos.contacto !== undefined;
+      const comprador = editar ? datosComprador(datos.nombre, datos.apellido ?? "", datos.contacto) : null;
+      if (editar && !comprador) return json("Revisá los datos del comprador.", 400);
+      const cambios: Record<string,string> = {
+        reservar: "estado='reservado', fase='reservado', vence=NULL",
+        revisar: "estado='reservado', fase='revision', vence=NULL",
+        pagar: "estado='pagado', fase=NULL, vence=NULL",
+        liberar: "estado='disponible', fase=NULL, referencia=NULL, nombre=NULL, apellido=NULL, contacto=NULL, origen=NULL, vence=NULL",
+        guardar: "estado=estado",
+      };
+      const campos = [cambios[accion], "version=version+1"];
+      const valores: (string | number)[] = [];
+      if (comprador && accion !== "liberar") {
+        campos.push("nombre=?", "apellido=?", "contacto=?");
+        valores.push(comprador.nombre, comprador.apellido, comprador.contacto);
+      }
+      let condiciones = `edicion=1 AND numero=? AND referencia=? AND (${activo})!='disponible'`;
+      valores.push(numero, referencia);
+      if (datos.version === undefined) condiciones += " AND fase IS NOT NULL AND fase='apartado'";
+      else { condiciones += " AND version=?"; valores.push(datos.version); }
+      if (comprador && accion !== "liberar") {
+        condiciones += ` AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND numero!=?
+          AND contacto=? AND (${activo})!='disponible') < 5`;
+        valores.push(numero, comprador.contacto);
+      }
       const resultado = await env.DB.prepare(
-        `UPDATE marco_rifa_numeros SET ${cambio} WHERE edicion=1 AND numero=? AND referencia=? AND estado='reservado' AND vence>unixepoch()`,
-      )
-        .bind(numero, referencia)
-        .run();
+        `UPDATE marco_rifa_numeros SET ${campos.join(",")} WHERE ${condiciones}`,
+      ).bind(...valores).run();
       return resultado.meta.changes
         ? json("Actualizado.")
         : json("La reserva ya cambió.", 409);
@@ -161,7 +205,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
   }
   if (leer && ruta === "/favicon.svg") return recurso(icono, "image/svg+xml");
   if (leer && ruta === "/") {
-    const original = recurso(portada, "text/html");
+    const original = recurso(portada.replace("/*ESTADOS*/null", JSON.stringify(estados)), "text/html");
     const cambios = await env.DB.prepare(
       "SELECT encabezado,destacado,descripcion,historia FROM marco_rifa_portada WHERE edicion=1",
     ).first<Record<string,string>>().catch(() => null);
@@ -176,8 +220,8 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     }
     return html.transform(original);
   }
-  if (leer && ruta === "/pista.css") return recurso(pista, "text/css");
-  if (leer && ruta === "/estilos.css") return recurso(estilos, "text/css");
+  if (leer && ruta === "/pista.css") return recurso(pista + colores, "text/css");
+  if (leer && ruta === "/estilos.css") return recurso(estilos + colores, "text/css");
   if (leer && ruta === "/solaz.svg") return recurso(solaz, "image/svg+xml");
   const imagen = imagenes.get(ruta);
   if (leer && imagen) {
@@ -190,15 +234,19 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     });
   }
   if (leer && ruta === "/api/tablero") {
-    const [edicion, numeros] = await env.DB.batch([
+    const [edicion, numeros] = await env.DB.batch<Record<string, unknown>>([
       env.DB.prepare(
         "SELECT abierta,instrucciones FROM marco_rifa_ediciones WHERE id=1",
       ),
       env.DB.prepare(
-        `SELECT numero,${activo} AS estado FROM marco_rifa_numeros WHERE edicion=1 ORDER BY numero`,
+        `SELECT numero,${activo} AS estado,nombre,apellido FROM marco_rifa_numeros WHERE edicion=1 ORDER BY numero`,
       ),
     ]);
-    return json({ edicion: edicion.results[0], numeros: numeros.results });
+    return json({ edicion: { ...edicion.results[0], enHorario: enHorario(), precio },
+      numeros: numeros.results.map(({numero, estado, nombre, apellido}) => ({
+        numero, estado, titular: estado === "disponible" ? "" : enmascarar([nombre, apellido].filter(Boolean).join(" ")),
+      })),
+    });
   }
   if (ejecutar && ruta === "/api/reservas") {
     const edicion = await env.DB.prepare(
@@ -206,31 +254,27 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     ).first();
     if (!edicion?.abierta || !edicion.instrucciones)
       return json("Las reservas todavía están cerradas.", 403);
+    if (!enHorario()) return json("Podés reservar de 08:00 a 22:00, hora argentina.", 403);
     const {
       numero,
       numeros = numero === undefined ? [] : [numero],
-      nombre,
+      nombre, apellido = "",
       contacto,
     } = await req.json<{
       numero?: number;
       numeros?: number[];
-      nombre: string;
+      nombre: string; apellido?: string;
       contacto: string;
     }>();
+    const comprador = datosComprador(nombre, apellido, contacto);
     if (
       !Array.isArray(numeros) ||
       numeros.length < 1 ||
-      numeros.length > 3 ||
+      numeros.length > 5 ||
       !numeros.every((n) => Number.isInteger(n) && n > 0) ||
       new Set(numeros).size !== numeros.length ||
-      typeof nombre !== "string" ||
-      nombre.trim().length < 2 ||
-      nombre.length > 80 ||
-      typeof contacto !== "string" ||
-      !/^\+?[\d ()-]{7,24}$/.test(contacto) ||
-      contacto.replace(/\D/g, "").length < 7
-    )
-      return json("Revisá el nombre y el teléfono.", 400);
+      !comprador
+    ) return json("Elegí entre uno y cinco números y revisá tus datos.", 400);
     const origen = Array.from(
       await huella(
         env.CLAVE_MARCO +
@@ -245,27 +289,26 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       `WITH elegibles AS MATERIALIZED (
         SELECT numero FROM marco_rifa_numeros WHERE edicion=1 AND numero IN (${marcas}) AND (${activo})='disponible'
       )
-      UPDATE marco_rifa_numeros SET estado='reservado',nombre=?,contacto=?,origen=?,referencia=?,vence=unixepoch()+86400
+      UPDATE marco_rifa_numeros SET estado='reservado',fase='apartado',nombre=?,apellido=?,contacto=?,origen=?,referencia=?,vence=unixepoch()+3600,version=version+1
       WHERE edicion=1 AND numero IN (SELECT numero FROM elegibles)
       AND (SELECT count(*) FROM elegibles)=?
       AND EXISTS (SELECT 1 FROM marco_rifa_ediciones WHERE id=1 AND abierta=1 AND instrucciones!='')
-      AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND origen=? AND estado='reservado' AND vence>unixepoch()) + ? <= 3`,
+      AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND contacto=? AND (${activo})!='disponible') + ? <= 5`,
     )
       .bind(
         ...numeros,
-        nombre.trim(),
-        contacto.trim(),
+        comprador.nombre, comprador.apellido, comprador.contacto,
         origen,
         referencia,
         numeros.length,
-        origen,
+        comprador.contacto,
         numeros.length,
       )
       .run();
     return resultado.meta.changes
-      ? json({ referencia }, 201)
+      ? json({ referencia, total: numeros.length * precio }, 201)
       : json(
-          "Algún número ya está ocupado o la selección supera el límite de tres reservas activas.",
+          "Algún número ya está ocupado o la selección supera el límite de cinco números por WhatsApp.",
           409,
         );
   }
