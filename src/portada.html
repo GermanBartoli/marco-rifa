@@ -218,19 +218,14 @@
               aria-current="false"
             >
               <div class="medio">
-                <div class="productos">
-                  <img src="/proteina.png" alt="Proteína MAG" /><img
-                    src="/creatina.png"
-                    alt="Creatina MAG"
-                  />
-                </div>
+                <img src="/deportista-creatina-mag.png" alt="Deportista con un envase de creatina MAG" />
               </div>
               <div class="sombra"></div>
               <span class="orden">04</span>
               <div class="rotulo">
                 <small>MAG Suplementos</small>
                 <h3>Proteína + creatina</h3>
-                <p id="texto-premio-4" class="descripcion-premio">Una proteína y una creatina MAG. Envases de catálogo ilustrativos.</p>
+                <p id="texto-premio-4" class="descripcion-premio">Una proteína y una creatina MAG. Imagen ilustrativa.</p>
               </div>
             </a>
           </article>
@@ -262,16 +257,6 @@
               </div>
             </a>
           </article>
-        </div>
-        <div class="detalle">
-          <div id="selector" hidden>
-            <button data-envase="ambos" aria-pressed="true">Ambos</button
-            ><button data-envase="proteina" aria-pressed="false">
-              Proteína</button
-            ><button data-envase="creatina" aria-pressed="false">
-              Creatina
-            </button>
-          </div>
         </div>
       </section>
       <section id="marcas" class="franja" aria-label="Patrocinadores">
@@ -706,7 +691,6 @@
             .setAttribute("aria-current", actual === i);
         });
         uno("#contador").textContent = "0" + (actual + 1) + " / 05";
-        uno("#selector").hidden = !premios[actual].classList.contains("p4");
         if (desplazar && movil.matches) {
           const tarjeta = premios[actual].getBoundingClientRect();
           galeria.scrollBy({
@@ -774,15 +758,6 @@
           }, 120);
         },
         { passive: true },
-      );
-      todos("#selector button").forEach(
-        (b) =>
-          (b.onclick = () => {
-            uno(".productos").dataset.envase = b.dataset.envase;
-            todos("#selector button").forEach((x) =>
-              x.setAttribute("aria-pressed", x === b),
-            );
-          }),
       );
       const ventana = uno(".ventana"),
         cinta = uno(".cinta");

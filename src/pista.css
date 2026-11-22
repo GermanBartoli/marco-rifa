@@ -48,7 +48,6 @@ nav,
 .banda,
 footer,
 .flechas,
-.detalle,
 .rangos {
   display: flex;
   align-items: center;
@@ -298,8 +297,7 @@ h2 span {
 .sombra,
 .medio > img,
 .vale,
-.mesa,
-.productos {
+.mesa {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -365,9 +363,6 @@ h2 span {
   font: 14px/1.4 DM, sans-serif;
   text-shadow: 0 1px 3px #000;
 }
-.detalle:has(#selector[hidden]) {
-  display: none;
-}
 .rotulo small {
   font:
     11px/1.2 DM,
@@ -413,46 +408,6 @@ h2 span {
   color: #523d2d;
   font: 32px Pista;
 }
-.productos {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f3f1dd;
-  padding-bottom: 24px;
-}
-.productos img {
-  width: 49%;
-  height: 78%;
-  object-fit: contain;
-  mix-blend-mode: multiply;
-  transition:
-    width 0.35s,
-    opacity 0.35s;
-}
-.productos[data-envase="proteina"] img:first-child,
-.productos[data-envase="creatina"] img:last-child {
-  width: 78%;
-}
-.productos[data-envase="proteina"] img:last-child,
-.productos[data-envase="creatina"] img:first-child {
-  width: 0;
-  opacity: 0;
-}
-.p4:not(.activo) .productos {
-  flex-direction: column;
-  padding: 8px 0 42px;
-}
-.p4:not(.activo) .productos img {
-  width: 92%;
-  height: 48%;
-}
-.detalle {
-  min-height: 48px;
-  border-bottom: 1px solid var(--linea);
-  padding: 8px 0;
-  font-size: 14px;
-}
-#selector button,
 .rangos button {
   border: 1px solid var(--linea);
   padding: 6px 10px;
@@ -714,17 +669,6 @@ footer {
   .activo .rotulo h3 {
     font-size: 32px;
   }
-  .p4:not(.activo) .productos {
-    flex-direction: row;
-  }
-  .p4:not(.activo) .productos img {
-    width: 49%;
-    height: 78%;
-  }
-  .detalle {
-    align-items: start;
-    flex-direction: column;
-  }
   .tablero {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -758,9 +702,6 @@ footer {
   }
   .paneles {
     height: 260px;
-  }
-  .detalle {
-    min-height: 54px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -25,6 +25,7 @@ import entrenamiento from "../originales/entrenamiento.jpg";
 import remeraGris from "../originales/remera-gris.webp";
 import mascaraRemera from "../originales/mascara-remera.png";
 import prenda from "../originales/prenda.webp";
+import deportistaCreatina from "../originales/deportista-creatina-mag.png";
 import proteina from "../originales/proteina.png";
 import creatina from "../originales/creatina.png";
 import pista_grano from "../originales/pista-grano.png";
@@ -42,6 +43,7 @@ const imagenes = new Map<string, [Uint8Array, string]>([
   ["/remera-gris.webp", [remeraGris, "image/webp"]],
   ["/mascara-remera.png", [mascaraRemera, "image/png"]],
   ["/prenda.webp", [prenda, "image/webp"]],
+  ["/deportista-creatina-mag.png", [deportistaCreatina, "image/png"]],
   ["/proteina.png", [proteina, "image/png"]],
   ["/creatina.png", [creatina, "image/png"]],
   ["/pista-grano.png", [pista_grano, "image/png"]],
