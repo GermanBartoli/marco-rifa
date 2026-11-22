@@ -194,7 +194,6 @@ h1 strong {
   height: 100%;
   object-fit: cover;
   object-position: 50% 64%;
-  filter: grayscale(1) contrast(1.12) brightness(1.18);
 }
 .retrato:after {
   content: "";
@@ -941,6 +940,9 @@ dialog .boton {
     transform: translateY(-12px) rotate(6deg) scale(1.16);
   }
 }
+.postal-tello {
+  display: none;
+}
 .postal-club {
   height: clamp(108px, 10vw, 150px);
   width: auto;
@@ -971,20 +973,28 @@ dialog .boton {
 }
 @media (max-width: 760px) {
   .historia {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px 24px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px 8px;
     padding: 28px 20px;
   }
   .historia > div {
     grid-column: 1 / -1;
     grid-row: 1;
   }
+  .postal-tello {
+    display: block;
+    justify-self: start;
+    width: min(100%, 76px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+  }
   .postal-club {
     justify-self: end;
     height: 86px;
   }
   .postal-prenda {
-    justify-self: start;
+    justify-self: center;
+    max-width: 100%;
     width: 80px;
     height: 86px;
   }
@@ -1651,12 +1661,15 @@ body:has(#visor-marca[open]) {
   }
   .afiche .retrato {
     grid-row: 1;
-    height: clamp(190px, 56vw, 320px);
+    height: auto;
+    aspect-ratio: 3 / 4;
+    max-height: 70svh;
     margin: 0;
     clip-path: none;
   }
   .afiche .retrato img {
-    object-position: center 35%;
+    object-fit: contain;
+    object-position: center;
   }
   .afiche .talon,
   .afiche .origen,
