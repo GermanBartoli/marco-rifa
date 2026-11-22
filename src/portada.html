@@ -269,11 +269,6 @@
         <div class="ancho">
           <div class="banda">
             <h2>Patrocinadores</h2>
-            <div>
-              <button id="retro" aria-label="Marcas anteriores">←</button
-              ><button id="pausa" aria-label="Pausar marcas">Ⅱ</button
-              ><button id="avance" aria-label="Marcas siguientes">→</button>
-            </div>
           </div>
           <div class="ventana">
             <div class="cinta">
@@ -287,7 +282,6 @@
                   <div>
                     <strong>Solaz Club</strong><small>Plan de 3 meses</small>
                   </div>
-                  <i aria-hidden="true">↗</i>
                 </div></a
               >
               <a
@@ -300,7 +294,6 @@
                   <div>
                     <strong>La Granja de Tello</strong><small>5 kg</small>
                   </div>
-                  <i aria-hidden="true">↗</i>
                 </div></a
               >
               <a
@@ -313,7 +306,6 @@
                   <div>
                     <strong>UEME</strong><small>Prenda a elección</small>
                   </div>
-                  <i aria-hidden="true">↗</i>
                 </div></a
               >
               <a
@@ -327,7 +319,6 @@
                     <strong>Lo de Lola</strong
                     ><small>Desayuno o merienda para dos</small>
                   </div>
-                  <i aria-hidden="true">↗</i>
                 </div></a
               >
               <a
@@ -341,7 +332,6 @@
                     <strong>MAG Suplementos</strong
                     ><small>Proteína y creatina</small>
                   </div>
-                  <i aria-hidden="true">↗</i>
                 </div></a
               >
             </div>
@@ -815,8 +805,7 @@
         copia.setAttribute("aria-hidden", "true");
         cinta.append(copia);
       });
-      let pausado = reducir.matches,
-        visible = false,
+      let visible = false,
         raf = 0,
         posicion = 0,
         previo = 0;
@@ -838,22 +827,13 @@
         cancelAnimationFrame(raf);
         previo = 0;
         posicion = ventana.scrollLeft;
-        uno("#pausa").textContent = pausado ? "▶" : "Ⅱ";
-        uno("#pausa").setAttribute(
-          "aria-label",
-          pausado ? "Reanudar marcas" : "Pausar marcas",
-        );
         if (
           visible &&
-          !pausado &&
+          !reducir.matches &&
           !document.hidden &&
           !ventana.matches(":hover,:focus-within")
         )
           raf = requestAnimationFrame(animar);
-      }
-      function parar() {
-        pausado = true;
-        sincronizar();
       }
       new IntersectionObserver(([e]) => {
         visible = e.isIntersecting;
@@ -863,31 +843,7 @@
       ["mouseenter", "mouseleave", "focusin", "focusout"].forEach((e) =>
         ventana.addEventListener(e, () => requestAnimationFrame(sincronizar)),
       );
-      ventana.addEventListener("touchstart", parar, { passive: true });
-      ventana.addEventListener("wheel", parar, { passive: true });
-      uno("#pausa").onclick = () => {
-        pausado = !pausado;
-        sincronizar();
-      };
-      function paso(d) {
-        parar();
-        const longitud = ciclo();
-        const siguiente =
-          (ventana.scrollLeft +
-            d * (originales[1].offsetLeft - originales[0].offsetLeft) +
-            longitud) %
-          longitud;
-        ventana.scrollTo({
-          left: siguiente,
-          behavior: reducir.matches ? "instant" : "smooth",
-        });
-      }
-      uno("#retro").onclick = () => paso(-1);
-      uno("#avance").onclick = () => paso(1);
-      reducir.onchange = () => {
-        pausado = reducir.matches;
-        sincronizar();
-      };
+      reducir.addEventListener("change", sincronizar);
       document.addEventListener("visibilitychange", sincronizar);
       const formatoNumero = (numero) => String(numero).padStart(3, "0");
       function mostrarSeleccion() {

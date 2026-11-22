@@ -257,8 +257,7 @@ h2 span {
   display: block;
   margin-bottom: 6px;
 }
-.flechas button,
-.banda button {
+.flechas button {
   border: 1px solid #888e7c;
   width: 36px;
   height: 36px;
@@ -454,19 +453,14 @@ button[aria-pressed="true"]:not(.elegir) {
 }
 .franja {
   padding: clamp(26px, 3vw, 48px) 0;
-  background: color-mix(in srgb, var(--papel) 80%, var(--lima));
+  background: var(--papel);
   color: var(--negro);
-  border-block: 1px solid var(--linea);
 }
 .banda {
   margin-bottom: 18px;
 }
 .banda h2 {
   font-size: clamp(32px, 3.4vw, 54px);
-}
-.banda button {
-  color: inherit;
-  background: transparent;
 }
 .ventana {
   overflow: auto;
@@ -481,18 +475,13 @@ button[aria-pressed="true"]:not(.elegir) {
 .socio {
   display: block;
   width: clamp(225px, 23vw, 325px);
-  background: var(--papel);
-  border: 1px solid #c9cbbd;
-  overflow: hidden;
-  border-radius: 6px;
-  perspective: 600px;
+  text-align: center;
 }
 .foto-socio {
   display: grid;
   place-items: center;
   overflow: hidden;
-  height: clamp(96px, 9vw, 140px);
-  background: color-mix(in srgb, var(--papel) 80%, var(--lima));
+  height: clamp(72px, 7vw, 100px);
 }
 .foto-socio::before {
   content: "";
@@ -516,34 +505,18 @@ button[aria-pressed="true"]:not(.elegir) {
   }
 }
 .pie-socio {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 14px;
-}
-.pie-socio strong,
-.pie-socio small {
-  display: block;
+  padding: 0 10px 10px;
 }
 .pie-socio strong {
-  font:
-    25px/1 Pista,
-    sans-serif;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 .pie-socio small {
-  margin-top: 4px;
-  font:
-    12px/1.25 DM,
-    sans-serif;
-  color: #4f5549;
-}
-.pie-socio i {
-  font: 18px DM;
-  transition: transform 0.3s;
-}
-.socio:is(:hover, :focus-visible) i {
-  transform: translate(2px, -2px);
+  font-size: 13px;
+  color: var(--negro);
 }
 @media (prefers-reduced-motion: no-preference) {
   .retrato {
@@ -782,8 +755,7 @@ footer {
   .flechas output {
     margin-right: 2px;
   }
-  .flechas button,
-  .banda button {
+  .flechas button {
     width: 32px;
     height: 32px;
   }
