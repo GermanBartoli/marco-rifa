@@ -621,6 +621,22 @@
       const premios = todos(".premio");
       const galeria = uno(".paneles");
       const movil = matchMedia("(max-width:760px)");
+      const tituloOriginal = document.title;
+      let intervaloTitulo;
+      function actualizarTitulo() {
+        clearInterval(intervaloTitulo);
+        document.title = tituloOriginal;
+        if (!document.hidden) return;
+        const mensajes = ["¡Volvé!", "No te lo pierdas..."];
+        let indice = 0;
+        document.title = mensajes[indice];
+        intervaloTitulo = setInterval(() => {
+          indice = (indice + 1) % mensajes.length;
+          document.title = mensajes[indice];
+        }, 3000);
+      }
+      document.addEventListener("visibilitychange", actualizarTitulo);
+      actualizarTitulo();
       const reducir = matchMedia("(prefers-reduced-motion:reduce)");
       const paleta = $("paleta");
       function aplicarPaleta(nombre) {
