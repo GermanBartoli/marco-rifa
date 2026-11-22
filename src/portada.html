@@ -380,16 +380,28 @@
       <section class="reloj fin">
         <div class="ancho">
           <div class="fecha">
-            <h2>Falta para el sorteo</h2>
+            <h2>Cuenta regresiva</h2>
             <time id="fecha-sorteo" datetime="2026-12-04T00:35:00-03:00"
               >Viernes 4 dic 2026 · 00:35 h · Argentina</time
             >
           </div>
           <div class="digitos" role="timer" aria-label="Tiempo hasta el sorteo">
-            <div><b>––</b><small>Días</small></div>
-            <div><b>––</b><small>Horas</small></div>
-            <div><b>––</b><small>Minutos</small></div>
-            <div><b>––</b><small>Segundos</small></div>
+            <div>
+              <span class="ficha-reloj"><b>––</b></span
+              ><small>Días</small>
+            </div>
+            <div>
+              <span class="ficha-reloj"><b>––</b></span
+              ><small>Horas</small>
+            </div>
+            <div>
+              <span class="ficha-reloj"><b>––</b></span
+              ><small>Minutos</small>
+            </div>
+            <div>
+              <span class="ficha-reloj"><b>––</b></span
+              ><small>Segundos</small>
+            </div>
           </div>
         </div>
       </section>
@@ -506,17 +518,26 @@
         ];
         valores.forEach((valor, i) => {
           const texto = String(valor).padStart(2, "0");
-          if (cifras[i].textContent !== texto) {
-            cifras[i].textContent = texto;
-            if (!reducir.matches && !document.hidden)
-              cifras[i].animate(
-                [
-                  { opacity: 0.65, transform: "translateY(3px)" },
-                  { opacity: 1, transform: "none" },
-                ],
-                240,
-              );
+          const cifra = cifras[i];
+          const anterior = cifra.textContent;
+          if (anterior === texto) return;
+          cifra.textContent = texto;
+          if (anterior === "––" || reducir.matches || document.hidden) return;
+
+          const hoja = document.createElement("span");
+          hoja.className = "hoja";
+          hoja.setAttribute("aria-hidden", "true");
+          for (const cara of ["respaldo", "saliente", "entrante"]) {
+            const mitad = document.createElement("span");
+            mitad.className = cara;
+            mitad.dataset.valor = cara === "entrante" ? texto : anterior;
+            hoja.append(mitad);
           }
+          cifra.parentElement.querySelector(".hoja")?.remove();
+          cifra.after(hoja);
+          hoja.addEventListener("animationend", (evento) => {
+            if (evento.target.className === "entrante") hoja.remove();
+          });
         });
         if (segundos > 0)
           setTimeout(actualizarReloj, 1000 - (Date.now() % 1000));
