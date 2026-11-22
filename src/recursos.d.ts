@@ -14,3 +14,11 @@ declare module "*.webp" {
   const valor: Uint8Array;
   export default valor;
 }
+declare module "*.jpg" {
+  const valor: Uint8Array;
+  export default valor;
+}
+declare module "*.svg" {
+  const valor: string;
+  export default valor;
+}

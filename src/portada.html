@@ -16,8 +16,8 @@
         <div class="etiqueta">RIFA SOLIDARIA</div>
         <h1>Todos por<br /><em>Marco.</em></h1>
         <p>
-          Una rifa para acompañar a Marco, con tres premios para quienes se
-          sumen.
+          Una rifa solidaria para apoyar a Marco, con premios de los comercios
+          que se suman a la iniciativa.
         </p>
         <a class="boton" href="#numeros">Explorar números ↘</a>
       </div>
@@ -30,10 +30,65 @@
       <h2>Los premios<span>.</span></h2>
       <div class="premios">
         <article>
-          <small>1.er premio</small><strong>3 meses de gym</strong>
+          <small>Primer premio</small>
+          <h3>Plan de 3 meses</h3>
+          <p>en Solaz Club</p>
         </article>
-        <article><small>2.º premio</small><strong>Un asado</strong></article>
-        <article><small>3.er premio</small><strong>Ropa</strong></article>
+        <article>
+          <small>Segundo premio</small>
+          <h3>5 kg</h3>
+          <p>de La Granja de Tello</p>
+        </article>
+        <article>
+          <small>Tercer premio</small>
+          <h3>Una prenda de ropa</h3>
+          <p>Marca por confirmar</p>
+        </article>
+      </div>
+    </section>
+    <section
+      class="patrocinadores"
+      aria-labelledby="titulo-marcas"
+      aria-roledescription="carrusel"
+    >
+      <h2 id="titulo-marcas">Patrocinadores</h2>
+      <div class="visor" id="marcas" aria-live="polite">
+        <a
+          href="https://www.instagram.com/solaz.club/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="sello solaz"
+            ><img src="/solaz.svg" alt="" width="75" height="30"
+          /></span>
+          <span>Solaz Club<small>@solaz.club ↗</small></span>
+        </a>
+        <a
+          href="https://www.instagram.com/lagranjadetello/?hl=es-la"
+          target="_blank"
+          rel="noopener noreferrer"
+          hidden
+        >
+          <span class="sello"
+            ><img src="/lagranjadetello.jpg" alt="" width="50" height="50"
+          /></span>
+          <span>La Granja de Tello<small>@lagranjadetello ↗</small></span>
+        </a>
+      </div>
+      <div class="controles">
+        <button
+          type="button"
+          aria-label="Patrocinador anterior"
+          aria-controls="marcas"
+        >
+          ←</button
+        ><button
+          type="button"
+          aria-label="Patrocinador siguiente"
+          aria-controls="marcas"
+        >
+          →
+        </button>
       </div>
     </section>
     <section id="numeros">
@@ -77,6 +132,29 @@
     let numeros = [],
       edicion = {},
       elegido;
+    const marcas = Array.from($("marcas").children);
+    let marcaVisible = 0;
+    function mostrarMarca(paso) {
+      marcaVisible = (marcaVisible + paso + marcas.length) % marcas.length;
+      marcas.forEach((marca, indice) => {
+        marca.hidden = indice !== marcaVisible;
+      });
+    }
+    document.querySelectorAll(".controles button").forEach((boton, indice) => {
+      boton.onclick = () => mostrarMarca(indice === 0 ? -1 : 1);
+    });
+    let origenTactil;
+    $("marcas").addEventListener(
+      "touchstart",
+      (evento) => {
+        origenTactil = evento.touches[0].clientX;
+      },
+      { passive: true },
+    );
+    $("marcas").addEventListener("touchend", (evento) => {
+      const distancia = evento.changedTouches[0].clientX - origenTactil;
+      if (Math.abs(distancia) > 45) mostrarMarca(distancia < 0 ? 1 : -1);
+    });
     function dibujar() {
       const botones = numeros
         .filter((n) => !$("libres").checked || n.estado === "disponible")

@@ -10,5 +10,7 @@ await build({
     ".css": "text",
     ".html": "text",
     ".webp": "binary",
+    ".jpg": "binary",
+    ".svg": "text",
   },
 });
