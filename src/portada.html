@@ -560,7 +560,10 @@
         + Agregar otro número
       </button>
       <p id="limite" hidden>Máximo de 5 números por persona.</p>
-      <p id="detalle"></p>
+      <section id="detalle" aria-label="Resumen de la reserva">
+        <div class="importe"><span>Total a transferir<small id="cantidad-reserva"></small></span><strong id="importe-reserva"></strong></div>
+        <div id="transferencia"><h3>Datos para transferir</h3><dl id="cuenta-pago"></dl><p id="indicacion-pago"></p></div>
+      </section>
       <form hidden>
         <label
           >Nombre<input
@@ -843,16 +846,38 @@
         etiqueta.textContent = texto;
         $("leyenda").append(etiqueta);
       }
+      function mostrarImporte(cantidad, total) {
+        $("detalle").hidden = !cantidad;
+        $("cantidad-reserva").textContent = cantidad + (cantidad === 1 ? " número" : " números") + " × " + dinero(edicion.precio || 0);
+        $("importe-reserva").textContent = dinero(total || 0);
+        const instrucciones = disponibleAhora() ? edicion.instrucciones : "";
+        const cuenta = $("cuenta-pago");
+        cuenta.replaceChildren();
+        const indicacion = (instrucciones || "").replace(/\b(Alias|CVU|CBU)\s*:\s*([\w.-]+)/gi, (_, campo, dato) => {
+          const etiqueta = document.createElement("dt"), valor = document.createElement("dd");
+          etiqueta.textContent = campo;
+          valor.textContent = dato.replace(/\.$/, "");
+          cuenta.append(etiqueta, valor);
+          return "";
+        }).replace(/^[\s·.,;–-]+/, "").trim();
+        $("indicacion-pago").textContent = disponibleAhora() ? indicacion : $("modo").textContent;
+        $("transferencia").querySelector("h3").hidden = !instrucciones;
+      }
+      function mostrarNumeros(valores) {
+        $("seleccion").replaceChildren(...Array.from(valores, numero => {
+          const fichaNumero = document.createElement("span");
+          fichaNumero.textContent = formatoNumero(numero);
+          return fichaNumero;
+        }));
+      }
       function sincronizarSeleccion() {
         $("paso-tablero").hidden = !seleccion.size;
         $("resumen").textContent = listaElegida();
-        $("seleccion").textContent = listaElegida();
+        mostrarNumeros(seleccion);
         $("agregar").hidden = seleccion.size >= 5;
         $("limite").hidden = seleccion.size < 5;
         formulario.hidden = !seleccion.size || !disponibleAhora();
-        $("detalle").textContent = seleccion.size
-          ? "Total: " + dinero(seleccion.size * edicion.precio) + ". " + ($("modo").textContent) +
-            (disponibleAhora() ? " " + edicion.instrucciones : "") : "";
+        mostrarImporte(seleccion.size, seleccion.size * edicion.precio);
         dibujar();
       }
       function dibujar() {
@@ -928,6 +953,9 @@
         enviando = true;
         const boton = formulario.querySelector("button");
         boton.disabled = true;
+        // Abrir durante el clic evita que el navegador bloquee la pestaña tras la reserva.
+        const ventanaChat = window.open("about:blank", "_blank");
+        if (ventanaChat) ventanaChat.opener = null;
         const elegidos = [...seleccion], datos = Object.fromEntries(new FormData(formulario));
         try {
           const r = await fetch("/api/reservas", {
@@ -938,20 +966,23 @@
           if (!r.ok) { await cargar(); throw Error(d); }
           const lista = elegidos.map(formatoNumero).join(", ");
           const mensaje = "Hola, Marco. Soy " + [datos.nombre, datos.apellido].filter(Boolean).join(" ") +
-            ". Aparté los números " + lista + " por " + dinero(d.total) + ". Te envío el comprobante. Ref. " + d.referencia;
+            (elegidos.length === 1 ? ". Aparté el número " : ". Aparté los números ") + lista + " por " + dinero(d.total) + ". Te envío el comprobante.";
           const chat = $("chat-reserva");
           chat.href = "https://wa.me/5493516776352?text=" + encodeURIComponent(mensaje);
           seleccion.clear();
           sincronizarSeleccion();
           formulario.reset();
-          $("seleccion").textContent = lista;
+          mostrarNumeros(elegidos);
           $("agregar").hidden = true;
-          $("detalle").textContent = "Total: " + dinero(d.total) + ". " + edicion.instrucciones;
+          mostrarImporte(elegidos.length, d.total);
           $("resultado").textContent = "Apartados por una hora. Adjuntá el comprobante en WhatsApp.";
           chat.hidden = false;
+          if (ventanaChat && !ventanaChat.closed) ventanaChat.location.replace(chat.href);
           await cargar();
-          location.assign(chat.href);
-        } catch (err) { $("resultado").textContent = err.message; }
+        } catch (err) {
+          if (ventanaChat && !ventanaChat.closed) ventanaChat.close();
+          $("resultado").textContent = err.message;
+        }
         finally { enviando = false; boton.disabled = false; }
       };
       cargar();

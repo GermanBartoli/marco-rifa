@@ -1610,3 +1610,36 @@ body:has(#visor-marca[open]) {
     max-width: 380px;
   }
 }
+
+#ficha {
+  width: min(94vw, 510px);
+  max-height: 90dvh;
+  overflow-y: auto;
+  border: 1px solid var(--linea);
+  border-radius: 18px;
+  background: var(--papel);
+  padding: clamp(18px, 4vw, 30px);
+  box-shadow: 0 20px 80px #08121f48;
+}
+#ficha h2 { margin: 0 0 12px; font: 700 32px/1 Pista, sans-serif; }
+#ficha .cerrar { border-radius: 50%; width: 32px; height: 32px; background: transparent; }
+#seleccion { display: flex; flex-wrap: wrap; gap: 6px; }
+#seleccion span { padding: 4px 12px; border: 1px solid var(--linea); border-radius: 6px; font: 600 21px/1.2 Pista, sans-serif; }
+#ficha #detalle { margin: 16px 0; }
+#ficha .importe { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 14px 18px; border-radius: 12px; background: var(--negro); color: #fff; }
+#ficha .importe span { font-weight: 700; }
+#cantidad-reserva { display: block; font: 14px/1.5 DM, sans-serif; opacity: .82; }
+#importe-reserva { font: 700 clamp(38px, 8vw, 52px)/1 Pista, sans-serif; font-variant-numeric: tabular-nums; }
+#transferencia { margin-top: 12px; border: 1px solid var(--linea); border-radius: 10px; padding: 12px 16px; }
+#transferencia h3 { margin: 0; font: 700 16px/1.4 DM, sans-serif; }
+#cuenta-pago { display: grid; grid-template-columns: auto 1fr; gap: 5px 15px; margin: 8px 0; }
+#cuenta-pago:empty, #indicacion-pago:empty { display: none; }
+#cuenta-pago dd { margin: 0; overflow-wrap: anywhere; font-weight: 650; user-select: all; }
+#ficha #indicacion-pago { margin: 8px 0 0; font: 14px/1.4 DM, sans-serif; }
+#ficha form { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+#ficha form label { display: grid; gap: 4px; margin: 0; font-size: 14px; }
+#ficha form input { box-sizing: border-box; width: 100%; padding: 9px 12px; margin: 0; border: 1px solid var(--linea); border-radius: 7px; font-size: 16px; }
+#ficha form label:last-of-type, #ficha form .boton { grid-column: 1 / -1; }
+#ficha form .boton { margin-top: 3px; border-radius: 8px; padding: 12px; font-weight: 700; }
+#ficha #resultado:empty { display: none; }
+@media(max-width:380px) { #ficha form { grid-template-columns: 1fr; } }
