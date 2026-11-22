@@ -488,65 +488,32 @@ button[aria-pressed="true"]:not(.elegir) {
   perspective: 600px;
 }
 .foto-socio {
-  position: relative;
-  isolation: isolate;
+  display: grid;
+  place-items: center;
   overflow: hidden;
   height: clamp(96px, 9vw, 140px);
-  background: #222820;
+  background: color-mix(in srgb, var(--papel) 80%, var(--lima));
 }
-.foto-socio .motivo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.65s cubic-bezier(0.19, 1, 0.22, 1);
-}
-.socio:is(:hover, :focus-visible) .motivo {
-  transform: scale(1.08) translateY(-1%);
-}
-.foto-socio .firma {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  width: 60px;
-  height: 27px;
-  object-fit: contain;
-  background: #fdfcf5;
-  padding: 4px;
-}
-.socio-solaz .firma {
-  background: #1d221c;
-}
-.socio-granja .foto-socio {
-  background: #b81924;
-}
-.socio-granja .motivo,
-.socio-lola .motivo,
-.socio-mag .motivo {
-  object-fit: contain;
-}
-.socio-granja .foto-socio:before,
-.socio-lola .foto-socio:before {
+.foto-socio::before {
   content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: repeating-linear-gradient(
-    120deg,
-    transparent 0 9px,
-    #0001 10px 11px
-  );
+  width: 84%;
+  aspect-ratio: 1024 / 275;
+  background: var(--negro);
+  mask: url(/logos-patrocinadores.png) center var(--fila-logo) / 100% auto no-repeat;
+  opacity: 0.77;
 }
-.socio-lola .foto-socio {
-  background: #d7b898;
+.socio-solaz { --fila-logo: 3.8%; }
+.socio-granja { --fila-logo: 28.3%; }
+.socio-ueme { --fila-logo: 50.8%; }
+.socio-lola { --fila-logo: 73.9%; }
+.socio-mag { --fila-logo: 98.6%; }
+.socio:is(:hover, :focus-visible) .foto-socio::before {
+  opacity: 1;
 }
-.socio-ueme .motivo {
-  object-position: 50% 36%;
-}
-.socio-mag .foto-socio {
-  background: #eff1de;
-}
-.socio-mag .motivo {
-  mix-blend-mode: multiply;
+@media (prefers-reduced-motion: no-preference) {
+  .foto-socio::before {
+    transition: opacity 220ms ease;
+  }
 }
 .pie-socio {
   display: flex;
