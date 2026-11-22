@@ -149,10 +149,10 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
          FROM marco_rifa_numeros WHERE edicion=1 ORDER BY numero`,
       ).all();
       return json(filas.results.map(fila => fila.estado === "disponible"
-        ? { numero: fila.numero, estado: fila.estado } : fila));
+        ? { numero: fila.numero, estado: fila.estado, version: fila.version } : fila));
     }
     if (ejecutar && ruta === "/admin/actualizar") {
-      const datos = await req.json<{ numero: number; referencia: string; accion: string;
+      const datos = await req.json<{ numero: number; referencia?: string; accion: string;
         version?: number; nombre?: string; apellido?: string; contacto?: string }>();
       const { numero, referencia, accion } = datos;
       if (!["reservar", "revisar", "pagar", "liberar", "guardar"].includes(accion))
@@ -173,9 +173,18 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
         campos.push("nombre=?", "apellido=?", "contacto=?");
         valores.push(comprador.nombre, comprador.apellido, comprador.contacto);
       }
-      let condiciones = `edicion=1 AND numero=? AND referencia=? AND (${activo})!='disponible'`;
-      valores.push(numero, referencia);
-      if (datos.version === undefined) condiciones += " AND fase IS NOT NULL AND fase='apartado'";
+      let condiciones = "edicion=1 AND numero=?";
+      if (referencia === undefined) {
+        if (!comprador || !Number.isInteger(datos.version) || !["reservar", "revisar", "pagar"].includes(accion))
+          return json("Elegí un estado y completá los datos del comprador.", 400);
+        campos.push("referencia=?", "origen=NULL");
+        valores.push(crypto.randomUUID(), numero);
+        condiciones += ` AND (${activo})='disponible'`;
+      } else {
+        condiciones += ` AND referencia=? AND (${activo})!='disponible'`;
+        valores.push(numero, referencia);
+      }
+      if (datos.version === undefined) condiciones += " AND fase='apartado'";
       else { condiciones += " AND version=?"; valores.push(datos.version); }
       if (comprador && accion !== "liberar") {
         condiciones += ` AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND numero!=?

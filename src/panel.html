@@ -46,14 +46,17 @@
     }
     function editar(fila) {
       actual = fila;
-      formulario.hidden = fila.estado === "disponible";
-      if (formulario.hidden) { aviso.textContent = "Número " + fila.numero + " disponible."; return; }
+      const disponible = fila.estado === "disponible";
+      formulario.hidden = false;
+      for (const opcion of formulario.elements.accion.options) {
+        opcion.disabled = disponible && ["guardar", "liberar"].includes(opcion.value);
+      }
       aviso.textContent = "";
       obtener("titulo").textContent = "Número " + fila.numero + " · " + estados[fila.estado];
       obtener("vencimiento").textContent = fila.vence ? "Apartado hasta " +
         new Date(fila.vence * 1000).toLocaleString("es-AR", {timeZone: "America/Argentina/Buenos_Aires"}) + " (Argentina)" : "";
       for (const campo of ["nombre", "apellido", "contacto"]) formulario.elements[campo].value = fila[campo] || "";
-      formulario.elements.accion.value = "guardar";
+      formulario.elements.accion.value = disponible ? "reservar" : "guardar";
       formulario.scrollIntoView({block: "nearest"});
     }
     async function cargar() {
