@@ -193,7 +193,7 @@ h1 strong {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 12%;
+  object-position: 50% 64%;
   filter: grayscale(1) contrast(1.12) brightness(1.18);
 }
 .retrato:after {
@@ -943,8 +943,8 @@ dialog .boton {
 .marca-ueme {
   position: absolute;
   z-index: 1;
-  top: calc(max(0px, 50cqh - 66.6667cqw) + clamp(7px, 2cqw, 16px));
-  right: calc(max(0px, 50cqw - 37.5cqh) + clamp(6px, 2cqw, 16px));
+  top: clamp(7px, 2cqw, 16px);
+  right: clamp(6px, 2cqw, 16px);
   color: rgb(255 255 255 / 85%);
   font-size: clamp(10px, 2cqw, 14px);
   line-height: 1.2;
@@ -953,10 +953,6 @@ dialog .boton {
 }
 .marca-ueme strong {
   letter-spacing: 0.08em;
-}
-.retrato img {
-  object-fit: contain;
-  object-position: center;
 }
 .historia {
   background: var(--negro);
