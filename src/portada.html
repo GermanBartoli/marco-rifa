@@ -30,6 +30,12 @@
     <meta property="og:image:alt" content="Retrato de Marco Bartoli" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      if (location.hash === "#numeros") {
+        history.replaceState(history.state, "", location.pathname + location.search);
+        history.scrollRestoration = "manual";
+      }
+    </script>
     <link rel="stylesheet" href="/pista.css" />
   </head>
   <body id="inicio">
