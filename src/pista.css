@@ -1643,3 +1643,45 @@ body:has(#visor-marca[open]) {
 #ficha form .boton { margin-top: 3px; border-radius: 8px; padding: 12px; font-weight: 700; }
 #ficha #resultado:empty { display: none; }
 @media(max-width:380px) { #ficha form { grid-template-columns: 1fr; } }
+
+@media (max-width: 760px) {
+  .afiche {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .afiche .retrato {
+    grid-row: 1;
+    height: clamp(190px, 56vw, 320px);
+    margin: 0;
+    clip-path: none;
+  }
+  .afiche .retrato img {
+    object-position: center 35%;
+  }
+  .afiche .talon,
+  .afiche .origen,
+  .afiche .marca-ueme,
+  .afiche figcaption,
+  .acciones-portada > a + a {
+    display: none;
+  }
+  .afiche .mensaje {
+    padding: 20px clamp(16px, 5vw, 32px) 24px;
+  }
+  .afiche h1 {
+    margin: 0 0 12px;
+    font-size: clamp(52px, 12vw, 80px);
+    line-height: 1;
+  }
+  .acciones-portada {
+    display: grid;
+    margin-top: 16px;
+  }
+  .datos-sorteo {
+    grid-row: 1;
+  }
+  .acciones-portada .accion {
+    min-height: 44px;
+    justify-content: center;
+  }
+}
