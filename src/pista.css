@@ -332,28 +332,14 @@ h2 span {
   color: white;
   padding: 4px 7px;
 }
-.visitar {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 5px 9px;
-  border-radius: 100px;
-  background: #171d17;
-  color: white;
-  font: 12px/1.2 DM, sans-serif;
-}
 .elegir:focus-visible {
   outline: 3px solid #dfff54;
   outline-offset: -4px;
   z-index: 1;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .activo .rotulo,
-  .activo .visitar {
+  .activo .rotulo {
     animation: entrada-premio 480ms cubic-bezier(.16, 1, .3, 1) both;
-  }
-  .activo .visitar {
-    animation-delay: 90ms;
   }
   @keyframes entrada-premio {
     from {
