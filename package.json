@@ -1,7 +1,7 @@
 {
   "name": "marco-rifa",
-  "version": "1.12.9",
-  "description": "Rifa a beneficio de Marco",
+  "version": "1.12.10",
+  "description": "Sorteo a beneficio de Marco",
   "scripts": {
     "test": "node --test scripts/reservas.test.mjs",
     "build": "tsc && node scripts/compilar.mjs"

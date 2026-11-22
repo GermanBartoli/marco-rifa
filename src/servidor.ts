@@ -118,6 +118,11 @@ async function autorizado(peticion: Request, env: Entorno) {
 
 async function atender(req: Request, env: Entorno): Promise<Response> {
   const url = new URL(req.url);
+  if (url.hostname === "marco-rifa.bartoligerman497.workers.dev" && url.pathname === "/" &&
+      (req.method === "GET" || req.method === "HEAD")) {
+    url.hostname = "marco-sorteo.bartoligerman497.workers.dev";
+    return Response.redirect(url.href, 302);
+  }
   const ruta = url.pathname;
   const leer = req.method === "GET";
   const ejecutar = req.method === "POST";

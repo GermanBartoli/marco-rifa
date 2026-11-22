@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 const base =
   "https://api.cloudflare.com/client/v4/accounts/" +
   process.env.CLOUDFLARE_ACCOUNT_ID +
-  "/workers/scripts/marco-rifa";
+  "/workers/scripts/";
 const metadata = {
   keep_assets: true,
   main_module: "worker.mjs",
@@ -33,9 +33,21 @@ async function enviar(ruta, opciones) {
   const datos = await respuesta.json();
   if (!datos.success) throw new Error(JSON.stringify(datos.errors));
 }
-await enviar("", { method: "PUT", body: formulario });
-await enviar("/subdomain", {
+const direccion = new FormData();
+direccion.set("metadata", JSON.stringify({
+  main_module: "direccion-sorteo.mjs",
+  compatibility_date: metadata.compatibility_date,
+  bindings: [{ type: "service", name: "SORTEO", service: "marco-rifa" }],
+}));
+direccion.set("direccion-sorteo.mjs", new Blob(
+  [await readFile("src/direccion-sorteo.mjs")], { type: "application/javascript+module" },
+), "direccion-sorteo.mjs");
+await enviar("marco-sorteo", { method: "PUT", body: direccion });
+const habilitarDireccion = {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ enabled: true, previews_enabled: false }),
-});
+};
+await enviar("marco-sorteo/subdomain", habilitarDireccion);
+await enviar("marco-rifa", { method: "PUT", body: formulario });
+await enviar("marco-rifa/subdomain", habilitarDireccion);

@@ -1,6 +1,8 @@
-# Marco Rifa
+# Sorteo de Marco
 
-Tablero de la rifa a beneficio de Marco con 200 números.
+Tablero del sorteo a beneficio de Marco con 200 números.
+
+La dirección pública es https://marco-sorteo.bartoligerman497.workers.dev/. El Worker de esa dirección reenvía las solicitudes al servicio existente mediante el enlace privado SORTEO.
 
 ## Desarrollo
 
