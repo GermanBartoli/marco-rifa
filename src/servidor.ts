@@ -5,7 +5,7 @@ import icono from "./favicon.svg";
 import panel from "./panel.html";
 import estilos from "./estilos.css";
 import esquema from "../db/inicial.sql";
-import pose from "../originales/marco-posando.webp";
+import pose from "../originales/marco-fondo-gris.png";
 import foto from "./marco.webp";
 
 import solaz from "../originales/solaz.svg";
@@ -36,7 +36,7 @@ const imagenes = new Map<string, [Uint8Array, string]>([
   ["/pista-grano.png", [pista_grano, "image/png"]],
   ["/barlow-condensed.woff2", [barlow_condensed, "font/woff2"]],
   ["/dm-sans.woff2", [dm_sans, "font/woff2"]],
-  ["/marco-posando.webp", [pose, "image/webp"]],
+  ["/marco-fondo-gris.png", [pose, "image/png"]],
   ["/marco.webp", [foto, "image/webp"]],
   ["/lagranjadetello.jpg", [granja, "image/jpeg"]],
   ["/ueme.webp", [ueme, "image/webp"]],
