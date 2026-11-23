@@ -66,3 +66,10 @@
 .acciones-panel a { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border:1px solid var(--borde); border-radius:8px; background:white; white-space:nowrap; }
 .acciones-panel a[target="_blank"] { background:var(--ciruela); color:white; border-color:var(--ciruela); }
 .acciones-panel a:hover { border-color:var(--uva); }
+
+.telefono-comprador { display:flex; align-items:center; border:1px solid var(--borde); border-radius:8px; background:white; }
+#prefijo { padding-left:.6rem; color:#6b6570; font-size:1rem; font-weight:500; }
+#comprador .telefono-comprador input { min-width:0; border:0; }
+#mensaje-comprador { display:block; margin-top:.6rem; padding:.5rem; text-align:center; background:#e4f3e9; color:#185d37; border-radius:8px; font-weight:650; }
+#mensaje-comprador[href]:hover { text-decoration:underline; }
+#mensaje-comprador[aria-disabled="true"] { background:#efedee; color:#686169; }

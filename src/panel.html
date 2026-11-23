@@ -55,12 +55,15 @@
         <h3 id="titulo" tabindex="-1"></h3><p id="vencimiento"></p>
         <label>Nombre<input name="nombre" required maxlength="80"></label>
         <label>Apellido (opcional)<input name="apellido" maxlength="80"></label>
-        <label>WhatsApp<input type="tel" name="contacto" required maxlength="24"></label>
+        <label>WhatsApp
+          <span class="telefono-comprador"><span id="prefijo">+54</span><input type="tel" name="contacto" required maxlength="24" placeholder="351 123 4567"></span>
+        </label>
         <label>Estado<select name="accion">
           <option value="guardar">Conservar estado</option><option value="reservar">Reservado por Marco</option>
           <option value="revisar">Comprobante en revisión</option><option value="pagar">Vendido</option>
           <option value="liberar">Liberar número</option>
         </select></label>
+        <a id="mensaje-comprador" target="_blank" rel="noopener noreferrer" aria-disabled="true">Enviar por WhatsApp ↗</a>
         <button>Guardar</button>
       </form>
       </div>
@@ -159,6 +162,29 @@
       marcar();
       abrirFicha(fila);
     }
+    const contacto = formulario.elements.contacto, mensaje = obtener("mensaje-comprador");
+    function actualizarWhatsApp(formatear = false) {
+      const valor = contacto.value.trim();
+      const digitos = valor.replace(/\D/g, "").replace(/^00/, "");
+      const internacional = /^(\+|00)/.test(valor);
+      const nacional = digitos.match(/^549?(\d{10})$/)?.[1] ||
+        (!internacional && digitos.match(/^(?:0|9)?(\d{10})$/)?.[1]);
+      let destino = "";
+      if (/^\+?[\d ()-]+$/.test(valor)) {
+        if (nacional) {
+          destino = "549" + nacional;
+          if (formatear) contacto.value = nacional;
+        } else if (internacional && !digitos.startsWith("54") && /^[1-9]\d{6,14}$/.test(digitos)) {
+          destino = digitos;
+        }
+      }
+      obtener("prefijo").hidden = /^(\+|00)/.test(contacto.value.trim());
+      mensaje.setAttribute("aria-disabled", String(!destino));
+      if (destino) mensaje.href = "https://wa.me/" + destino;
+      else mensaje.removeAttribute("href");
+    }
+    contacto.addEventListener("input", () => actualizarWhatsApp());
+    contacto.addEventListener("blur", () => actualizarWhatsApp(true));
     function abrirFicha(fila) {
       const disponible = fila.estado === "disponible";
       nube.hidden = false;
@@ -168,7 +194,11 @@
         "Número " + formato(fila.numero) + " · " + estados[fila.estado];
       obtener("vencimiento").textContent = fila.vence ? "Apartado hasta " +
         new Date(fila.vence * 1000).toLocaleString("es-AR", {timeZone: "America/Argentina/Buenos_Aires"}) + " (Argentina)" : "";
-      for (const campo of ["nombre", "apellido", "contacto"]) formulario.elements[campo].value = fila[campo] || "";
+      for (const campo of ["nombre", "apellido"]) formulario.elements[campo].value = fila[campo] || "";
+      const guardado = fila.contacto || "";
+      contacto.value = /^\d{11,15}$/.test(guardado) && !guardado.startsWith("54") && !guardado.startsWith("0")
+        ? "+" + guardado : guardado;
+      actualizarWhatsApp(true);
       formulario.elements.accion.value = disponible ? "reservar" : "guardar";
       ubicar();
       obtener("titulo").focus({preventScroll:true});
