@@ -181,10 +181,10 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       if (datos.seleccion !== undefined) {
         const seleccion = datos.seleccion;
         if (!comprador || !["reservar", "revisar", "pagar"].includes(accion) ||
-            !Array.isArray(seleccion) || seleccion.length < 1 || seleccion.length > 5 ||
+            !Array.isArray(seleccion) || seleccion.length < 1 || seleccion.length > 10 ||
             !seleccion.every(f => f && Number.isInteger(f.numero) && f.numero > 0 && Number.isInteger(f.version)) ||
             new Set(seleccion.map(f => f.numero)).size !== seleccion.length)
-          return json("Elegí entre uno y cinco números disponibles y revisá los datos.", 400);
+          return json("Elegí entre uno y diez números disponibles y revisá los datos.", 400);
         const pares = seleccion.map(() => "(?,?)").join(",");
         const resultado = await env.DB.prepare(
           `WITH elegibles AS MATERIALIZED (
@@ -195,11 +195,11 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
              referencia=?, origen=NULL, version=version+1
            WHERE edicion=1 AND numero IN (SELECT numero FROM elegibles)
              AND (SELECT count(*) FROM elegibles)=?
-             AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND contacto=? AND (${activo})!='disponible') + ? <= 5`,
+             AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND contacto=? AND (${activo})!='disponible') + ? <= 10`,
         ).bind(...seleccion.flatMap(f => [f.numero, f.version]), comprador.nombre, comprador.apellido,
           comprador.contacto, crypto.randomUUID(), seleccion.length, comprador.contacto, seleccion.length).run();
         return resultado.meta.changes ? json("Actualizado.") :
-          json("Algún número cambió o el comprador supera el límite de cinco números por WhatsApp.", 409);
+          json("Algún número cambió o el comprador supera el límite de diez números por WhatsApp.", 409);
       }
       const campos = [cambios[accion], "version=version+1"];
       const valores: (string | number)[] = [];
@@ -222,7 +222,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       else { condiciones += " AND version=?"; valores.push(datos.version); }
       if (comprador && accion !== "liberar") {
         condiciones += ` AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND numero!=?
-          AND contacto=? AND (${activo})!='disponible') < 5`;
+          AND contacto=? AND (${activo})!='disponible') < 10`;
         valores.push(numero, comprador.contacto);
       }
       const resultado = await env.DB.prepare(
@@ -326,11 +326,11 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     if (
       !Array.isArray(numeros) ||
       numeros.length < 1 ||
-      numeros.length > 5 ||
+      numeros.length > 10 ||
       !numeros.every((n) => Number.isInteger(n) && n > 0) ||
       new Set(numeros).size !== numeros.length ||
       !comprador
-    ) return json("Elegí entre uno y cinco números y revisá tus datos.", 400);
+    ) return json("Elegí entre uno y diez números y revisá tus datos.", 400);
     const origen = Array.from(
       await huella(
         env.CLAVE_MARCO +
@@ -349,7 +349,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       WHERE edicion=1 AND numero IN (SELECT numero FROM elegibles)
       AND (SELECT count(*) FROM elegibles)=?
       AND EXISTS (SELECT 1 FROM marco_rifa_ediciones WHERE id=1 AND abierta=1 AND instrucciones!='')
-      AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND contacto=? AND (${activo})!='disponible') + ? <= 5`,
+      AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND contacto=? AND (${activo})!='disponible') + ? <= 10`,
     )
       .bind(
         ...numeros,
@@ -366,7 +366,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
           alias: /\bAlias\s*:\s*([\w.-]+)/i.exec(String(edicion.instrucciones))?.[1].replace(/\.$/, "") || "",
         }, 201)
       : json(
-          "Algún número ya está ocupado o la selección supera el límite de cinco números por WhatsApp.",
+          "Algún número ya está ocupado o la selección supera el límite de diez números por WhatsApp.",
           409,
         );
   }

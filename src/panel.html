@@ -15,7 +15,7 @@
       <h1>Panel de Marco<span>.</span></h1>
       <h2>Reservas y pagos</h2>
       <p>Confirmá cada pago después de verificar la acreditación.</p>
-      <p>Elegí hasta cinco números disponibles para cargar un comprador. Para editar un número ocupado, seleccionalo por separado.</p>
+      <p>Elegí hasta diez números disponibles para cargar un comprador. Para editar un número ocupado, seleccionalo por separado.</p>
       <button id="actualizar">Actualizar</button>
       <div id="apartados" hidden>
         <h3>Apartados por una hora</h3>
@@ -68,8 +68,8 @@
       if (disponible) {
         actual = null;
         if (seleccion.has(fila.numero)) seleccion.delete(fila.numero);
-        else if (seleccion.size < 5) seleccion.set(fila.numero, fila);
-        else { aviso.textContent = "Ya elegiste cinco números."; return; }
+        else if (seleccion.size < 10) seleccion.set(fila.numero, fila);
+        else { aviso.textContent = "Ya elegiste diez números."; return; }
       } else {
         seleccion.clear();
         actual = fila;
