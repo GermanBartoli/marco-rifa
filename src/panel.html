@@ -90,6 +90,13 @@
       cerrarFicha();
       (multiple.checked ? completar : ancla())?.focus({preventScroll:true});
     };
+    document.addEventListener("click", e => {
+      if (nube.hidden || nube.contains(e.target) || guardando) return;
+      const yaElegido = e.target.closest("#tablero-marco button")?.getAttribute("aria-pressed") === "true";
+      seleccion.clear();
+      cerrarFicha();
+      if (yaElegido) e.stopPropagation();
+    }, true);
     document.addEventListener("keydown", e => {
       if (e.key === "Escape" && !nube.hidden) obtener("cerrar").click();
     });
