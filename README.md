@@ -14,6 +14,6 @@ El panel `/admin` abre Bóveda Bartoli. Cloudflare Access verifica el correo y e
 
 Para actualizar una base anterior a la versión 1.12, aplicar una vez `db/actualizacion-estados.sql` antes de publicar. Las bases nuevas ya incorporan estas columnas.
 
-La edición acepta reservas de 08:00 a 22:00 (Argentina). Cada WhatsApp puede tener hasta diez números ocupados. Los apartados vencen en una hora. Al revisar un comprobante o confirmar una reserva, Marco conserva los números hasta liberarlos o marcarlos vendidos. El tablero público muestra únicamente los estados y las iniciales enmascaradas.
+La edición acepta reservas de 08:00 a 22:00 (Argentina). Cada WhatsApp puede tener hasta veinte números ocupados. Los apartados vencen en una hora. Al revisar un comprobante o confirmar una reserva, Marco conserva los números hasta liberarlos o marcarlos vendidos. El tablero público muestra únicamente los estados y las iniciales enmascaradas.
 
 Germán puede editar los textos de portada y la apertura e instrucciones de la edición desde [Panel Bartoli](https://panel-bartoli.bartoligerman497.workers.dev/panel/edicion). Marco usa el módulo de reservas y pagos. Los campos de portada vacíos conservan la redacción original.

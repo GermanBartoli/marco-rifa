@@ -129,7 +129,7 @@
       <section id="numeros" class="ancho bloque tablero">
         <h2>Elegí tu número<span>.</span></h2>
         <ol class="pasos-reserva">
-          <li>Elegí hasta 10 números y tocá <strong>Continuar</strong>. Podés reservar de 08:00 a 22:00 (Argentina).</li>
+          <li>Elegí hasta 20 números y tocá <strong>Continuar</strong>. Podés reservar de 08:00 a 22:00 (Argentina).</li>
           <li>Revisá el monto y completá tus datos. Al confirmar, los números quedan apartados durante una hora.</li>
           <li>Transferí el total y adjuntá el comprobante en el chat de WhatsApp de Marco. Marco actualizará el estado.</li>
         </ol>
@@ -563,7 +563,7 @@
       <button type="button" id="agregar" aria-controls="grilla">
         + Agregar otro número
       </button>
-      <p id="limite" hidden>Máximo de 10 números por persona.</p>
+      <p id="limite" hidden>Máximo de 20 números por persona.</p>
       <section id="detalle" aria-label="Resumen de la reserva">
         <div class="importe"><span>Total a transferir<small id="cantidad-reserva"></small></span><strong id="importe-reserva"></strong></div>
         <div id="transferencia"><h3>Datos para transferir</h3><dl id="cuenta-pago"></dl><p id="indicacion-pago"></p></div>
@@ -861,8 +861,8 @@
         $("cantidad-elegida").textContent = seleccion.size === 1 ? "1 número elegido" : seleccion.size + " números elegidos";
         $("resumen").textContent = listaElegida();
         mostrarNumeros(seleccion);
-        $("agregar").hidden = seleccion.size >= 10;
-        $("limite").hidden = seleccion.size < 10;
+        $("agregar").hidden = seleccion.size >= 20;
+        $("limite").hidden = seleccion.size < 20;
         formulario.hidden = !seleccion.size || !disponibleAhora();
         mostrarImporte(seleccion.size, seleccion.size * edicion.precio);
         dibujar();
@@ -881,8 +881,8 @@
           b.onclick = () => {
             if (n.estado !== "disponible" || enviando) { $("aviso").textContent = b.title; return; }
             if (marcado) seleccion.delete(n.numero);
-            else if (seleccion.size < 10) seleccion.add(n.numero);
-            else { $("aviso").textContent = "Ya elegiste diez números."; return; }
+            else if (seleccion.size < 20) seleccion.add(n.numero);
+            else { $("aviso").textContent = "Ya elegiste veinte números."; return; }
             $("aviso").textContent = "";
             sincronizarSeleccion();
             enfocarNumero(n.numero);

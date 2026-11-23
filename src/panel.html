@@ -134,7 +134,7 @@
     function marcar() {
       completar.hidden = !multiple.checked;
       completar.disabled = !seleccion.size;
-      obtener("cantidad").textContent = multiple.checked ? seleccion.size + " de 10 elegidos" : "";
+      obtener("cantidad").textContent = multiple.checked ? seleccion.size + " de 20 elegidos" : "";
       for (const boton of obtener("tablero-marco").children) {
         const numero = Number(boton.dataset.numero);
         const marcado = seleccion.has(numero) || actual?.numero === numero;
@@ -150,8 +150,8 @@
         if (!disponible) return;
         nube.hidden = true;
         if (seleccion.has(fila.numero)) seleccion.delete(fila.numero);
-        else if (seleccion.size < 10) seleccion.set(fila.numero, fila);
-        else { aviso.textContent = "Ya elegiste diez números."; }
+        else if (seleccion.size < 20) seleccion.set(fila.numero, fila);
+        else { aviso.textContent = "Ya elegiste veinte números."; }
         marcar();
         return;
       }

@@ -97,6 +97,7 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
     estado: "pagado", titular: "P****",
   });
   assert.equal((await pedir("/api/reservas", reserva)).status, 409);
+  const rango = (inicio, cantidad) => Array.from({ length: cantidad }, (_, i) => inicio + i);
   const grupo = (numeros) =>
     pedir("/api/reservas", {
       nombre: reserva.nombre,
@@ -108,12 +109,13 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   assert.equal((await grupo([2, 2])).status, 400);
   assert.equal((await grupo([2, 3, 4])).status, 201);
   assert.equal((await grupo([5, 31, 32, 33, 34, 35])).status, 201);
+  assert.equal((await grupo(rango(61, 10))).status, 201);
   assert.equal((await grupo([6])).status, 409);
-  assert.equal((await grupo([40,41,42,43,44,45,46,47,48,49,50])).status, 400);
-  const otro = await pedir("/api/reservas", {numeros:[6,7,8,9,10,21,22,23,24,25], nombre:"Ana", apellido:"Ríos", contacto:"3511234567"});
+  assert.equal((await grupo(rango(100, 21))).status, 400);
+  const otro = await pedir("/api/reservas", {numeros:[6,7,8,9,10,21,22,23,24,25,...rango(71, 10)], nombre:"Ana", apellido:"Ríos", contacto:"3511234567"});
   assert.equal(otro.status, 201);
   const datos = await otro.json();
-  assert.equal(datos.total, 70000);
+  assert.equal(datos.total, 140000);
   assert.equal(datos.alias, "PRUEBA.LOCAL");
   assert.equal((await pedir("/api/reservas", {numero:11,nombre:"Ana",contacto:"+54 9 3511234567"})).status, 409);
   const inicial = (await (await pedir("/admin/reservas", undefined, true)).json()).find(n => n.numero === 6);
@@ -157,6 +159,7 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   assert.equal((await asignar([12, 13, 13])).status, 400);
   assert.equal((await asignar([12, 13], 1)).status, 409);
   assert.equal((await asignar([12, 13, 7])).status, 409);
+  assert.equal((await asignar(rango(81, 10))).status, 200);
   assert.equal((await asignar([12, 13, 14, 15, 16, 17, 18, 19, 20, 26])).status, 409);
   assert.equal((await asignar([12, 13, 14, 15, 16, 17, 18, 19, 20])).status, 200);
   assert.equal((await asignar([12, 13, 14, 15, 16, 17, 18, 19, 20])).status, 409);
@@ -164,6 +167,6 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   assert.equal(new Set(lote.map(fila => fila.referencia)).size, 1);
   assert.ok(lote.every(fila => fila.nombre === "Luz" && fila.estado === "pagado" && fila.version === 1));
   assert.equal((await actualizar({ ...manual, numero: 26 })).status, 409);
-  assert.equal((await asignar([40,41,42,43,44,45,46,47,48,49,50])).status, 400);
+  assert.equal((await asignar(rango(100, 21))).status, 400);
   sqlite.close();
 });
