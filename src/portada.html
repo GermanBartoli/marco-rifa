@@ -30,6 +30,30 @@
     <meta property="og:image:alt" content="Marco Bartoli sentado en un banco frente a un fondo gris" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      html.restaurando { visibility: hidden; scroll-behavior: auto; }
+    </style>
+    <script>
+      const clavePosicion = () => "sorteo.posicion:" + location.pathname + location.search + location.hash;
+      const raiz = document.documentElement;
+      let posicionAnterior = 0, alturaGrilla = 0;
+      if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
+        try {
+          posicionAnterior = Number(sessionStorage.getItem(clavePosicion()));
+          alturaGrilla = Number(sessionStorage.getItem(clavePosicion() + ".grilla"));
+        } catch {}
+        if (posicionAnterior > 0) {
+          history.scrollRestoration = "manual";
+          raiz.classList.add("restaurando");
+        }
+      }
+      addEventListener("pagehide", () => {
+        try {
+          sessionStorage.setItem(clavePosicion(), String(scrollY));
+          sessionStorage.setItem(clavePosicion() + ".grilla", String(document.getElementById("grilla").offsetHeight));
+        } catch {}
+      });
+    </script>
     <link rel="stylesheet" href="/pista.css" />
   </head>
   <body id="inicio">
@@ -887,6 +911,7 @@
           if (ocupados.length) $("aviso").textContent = "Ya se ocuparon: " + ocupados.map(formatoNumero).join(", ");
           if (!$("chat-reserva").hidden && ficha.open) dibujar();
           else sincronizarSeleccion();
+          $("grilla").style.minHeight = "";
           if (foco) enfocarNumero(foco);
         } catch {
           $("aviso").textContent = "No se pudo actualizar el tablero. Reintentando…";
@@ -952,26 +977,22 @@
         }
         finally { enviando = false; boton.disabled = false; }
       };
-      // El tablero cambia la altura del documento cuando llegan los 200 números.
-      const clavePosicion = () => "sorteo.posicion:" + location.pathname + location.search + location.hash;
-      addEventListener("pagehide", () => {
-        try { sessionStorage.setItem(clavePosicion(), String(scrollY)); } catch {}
-      });
-      let posicionAnterior = null;
-      if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
-        try { posicionAnterior = sessionStorage.getItem(clavePosicion()); } catch {}
-      }
       const tableroInicial = cargar();
-      if (posicionAnterior !== null && Number.isFinite(Number(posicionAnterior))) {
-        const interaccion = new AbortController();
-        for (const evento of ["wheel", "touchstart", "pointerdown", "keydown", "hashchange"]) {
-          addEventListener(evento, () => interaccion.abort(), { once: true, passive: true, signal: interaccion.signal });
+      if (raiz.classList.contains("restaurando")) {
+        $("grilla").style.minHeight = alturaGrilla + "px";
+        function mostrarPosicion() {
+          if (!raiz.classList.contains("restaurando")) return;
+          window.scrollTo({ top: posicionAnterior, behavior: "instant" });
+          raiz.classList.remove("restaurando");
+          history.scrollRestoration = "auto";
         }
+        // Mostrar el primer cuadro en su lugar cuando el tablero y las fuentes ya tienen su altura.
+        const esperaMaxima = setTimeout(mostrarPosicion, 1800);
         Promise.all([tableroInicial, document.fonts.ready]).then(() => {
-          if (!interaccion.signal.aborted) {
-            window.scrollTo({ top: Number(posicionAnterior), behavior: "instant" });
-            interaccion.abort();
-          }
+          requestAnimationFrame(() => {
+            clearTimeout(esperaMaxima);
+            mostrarPosicion();
+          });
         });
       }
       setInterval(() => {
