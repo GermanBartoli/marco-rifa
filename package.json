@@ -1,6 +1,6 @@
 {
   "name": "marco-rifa",
-  "version": "1.12.24",
+  "version": "1.12.25",
   "description": "Sorteo a beneficio de Marco",
   "scripts": {
     "test": "node --test scripts/reservas.test.mjs",
