@@ -30,12 +30,6 @@
     <meta property="og:image:alt" content="Marco Bartoli sentado en un banco frente a un fondo gris" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <script>
-      if (location.hash === "#numeros") {
-        history.replaceState(history.state, "", location.pathname + location.search);
-        history.scrollRestoration = "manual";
-      }
-    </script>
     <link rel="stylesheet" href="/pista.css" />
   </head>
   <body id="inicio">
@@ -958,7 +952,28 @@
         }
         finally { enviando = false; boton.disabled = false; }
       };
-      cargar();
+      // El tablero cambia la altura del documento cuando llegan los 200 números.
+      const clavePosicion = () => "sorteo.posicion:" + location.pathname + location.search + location.hash;
+      addEventListener("pagehide", () => {
+        try { sessionStorage.setItem(clavePosicion(), String(scrollY)); } catch {}
+      });
+      let posicionAnterior = null;
+      if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
+        try { posicionAnterior = sessionStorage.getItem(clavePosicion()); } catch {}
+      }
+      const tableroInicial = cargar();
+      if (posicionAnterior !== null && Number.isFinite(Number(posicionAnterior))) {
+        const interaccion = new AbortController();
+        for (const evento of ["wheel", "touchstart", "pointerdown", "keydown", "hashchange"]) {
+          addEventListener(evento, () => interaccion.abort(), { once: true, passive: true, signal: interaccion.signal });
+        }
+        Promise.all([tableroInicial, document.fonts.ready]).then(() => {
+          if (!interaccion.signal.aborted) {
+            window.scrollTo({ top: Number(posicionAnterior), behavior: "instant" });
+            interaccion.abort();
+          }
+        });
+      }
       setInterval(() => {
         if (!document.hidden && !$("ficha").open) cargar();
       }, 30000);
