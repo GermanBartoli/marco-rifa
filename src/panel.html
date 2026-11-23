@@ -17,6 +17,10 @@
       <p>Confirmá cada pago después de verificar la acreditación.</p>
       <p>Elegí hasta cinco números disponibles para cargar un comprador. Para editar un número ocupado, seleccionalo por separado.</p>
       <button id="actualizar">Actualizar</button>
+      <div id="apartados" hidden>
+        <h3>Apartados por una hora</h3>
+        <div id="reservas-rapidas"></div>
+      </div>
       <p id="estado" role="status"></p>
       <div id="leyenda" class="leyenda-estados"></div>
       <a id="ir-comprador" href="#comprador" hidden>Completar datos del comprador ↓</a>
@@ -102,6 +106,18 @@
           b.onclick = () => { if (!guardando) editar(fila); };
           return b;
         }));
+        const apartados = filas.filter(fila => fila.estado === "apartado");
+        obtener("apartados").hidden = !apartados.length;
+        obtener("reservas-rapidas").replaceChildren(...apartados.map(fila => {
+          const boton = document.createElement("button");
+          const nombre = [fila.nombre, fila.apellido].filter(Boolean).join(" ");
+          boton.className = "apartado";
+          boton.textContent = "Reservar " + formato(fila.numero) + " · " + nombre;
+          boton.onclick = () => guardar({
+            accion: "reservar", numero: fila.numero, referencia: fila.referencia, version: fila.version
+          }, true);
+          return boton;
+        }));
         const elegidos = actual ? [actual] : [...seleccion.values()];
         if (elegidos.some(anterior => {
           const fila = filas.find(f => f.numero === anterior.numero);
@@ -120,22 +136,28 @@
       if (guardando || (!actual && !seleccion.size)) return;
       const campos = Object.fromEntries(new FormData(formulario));
       if (campos.accion === "liberar" && !confirm("¿Liberar el número " + actual.numero + "?")) return;
+      await guardar(actual
+        ? {...campos, numero:actual.numero, referencia:actual.referencia, version:actual.version}
+        : {...campos, seleccion:[...seleccion.values()].map(({numero, version}) => ({numero, version}))});
+    };
+    async function guardar(datos, rapido = false) {
+      if (guardando) return;
       guardando = true;
       try {
         const r = await fetch("/panel/rifa/actualizar", {
           method: "POST", headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(actual
-            ? {...campos, numero:actual.numero, referencia:actual.referencia, version:actual.version}
-            : {...campos, seleccion:[...seleccion.values()].map(({numero, version}) => ({numero, version}))}),
+          body: JSON.stringify(datos),
         });
         if (!r.ok) throw Error(await r.json());
-        formulario.hidden = true;
-        actual = null;
-        seleccion.clear();
-        aviso.textContent = "Cambios guardados.";
+        if (!rapido || actual?.numero === datos.numero) {
+          formulario.hidden = true;
+          actual = null;
+          seleccion.clear();
+        }
+        aviso.textContent = rapido ? "Número " + formato(datos.numero) + " reservado por Marco." : "Cambios guardados.";
       } catch (error) { aviso.textContent = error.message; }
-      finally { guardando = false; await cargar(); }
-    };
+      finally { await cargar(); guardando = false; }
+    }
     obtener("actualizar").onclick = cargar;
     cargar();
     setInterval(() => { if (!document.hidden && !guardando) cargar(); }, 30000);
