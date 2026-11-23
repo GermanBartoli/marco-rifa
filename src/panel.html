@@ -15,7 +15,7 @@
       <h1>Panel de Marco<span>.</span></h1>
       <h2>Reservas y pagos</h2>
       <p>Confirmá cada pago después de verificar la acreditación.</p>
-      <p>Elegí hasta diez números disponibles para cargar un comprador. Para editar un número ocupado, seleccionalo por separado.</p>
+      <p>Tocá un número para ver o editar los datos del comprador.</p>
       <button id="actualizar">Actualizar</button>
       <div id="apartados" hidden>
         <h3>Apartados por una hora</h3>
@@ -23,10 +23,17 @@
       </div>
       <p id="estado" role="status"></p>
       <div id="leyenda" class="leyenda-estados"></div>
-      <a id="ir-comprador" href="#comprador" hidden>Completar datos del comprador ↓</a>
+      <div class="opciones-numeros">
+        <label><input id="multiple" type="checkbox"> Seleccionar varios números</label>
+        <button id="completar" hidden>Completar datos</button>
+        <span id="cantidad" role="status"></span>
+      </div>
+      <div class="zona-numeros">
       <div id="tablero-marco" class="grilla" aria-label="Estado de los números"></div>
-      <form id="comprador" hidden>
-        <h3 id="titulo"></h3><p id="vencimiento"></p>
+      <div id="nube" role="dialog" aria-labelledby="titulo" hidden>
+      <form id="comprador">
+        <button type="button" id="cerrar" aria-label="Cerrar ficha">×</button>
+        <h3 id="titulo" tabindex="-1"></h3><p id="vencimiento"></p>
         <label>Nombre<input name="nombre" required maxlength="80"></label>
         <label>Apellido (opcional)<input name="apellido" maxlength="80"></label>
         <label>WhatsApp<input type="tel" name="contacto" required maxlength="24"></label>
@@ -37,6 +44,8 @@
         </select></label>
         <button>Guardar</button>
       </form>
+      </div>
+      </div>
     </section>
   </main>
   <script>
@@ -52,42 +61,91 @@
       obtener("leyenda").append(etiqueta);
     }
     const formato = numero => String(numero).padStart(3, "0");
+    const nube = obtener("nube"), multiple = obtener("multiple"), completar = obtener("completar");
+    const tablero = obtener("tablero-marco");
+    let numeroAncla;
+    function ancla() {
+      return tablero.querySelector('[data-numero="' + numeroAncla + '"]');
+    }
+    function ubicar() {
+      const boton = ancla();
+      if (nube.hidden || !boton) return;
+      const centro = boton.offsetLeft + boton.offsetWidth / 2;
+      const izquierda = Math.max(0, Math.min(centro - nube.offsetWidth / 2, tablero.clientWidth - nube.offsetWidth));
+      const rect = boton.getBoundingClientRect();
+      const arriba = rect.top > innerHeight - rect.bottom;
+      nube.classList.toggle("encima", arriba);
+      nube.style.left = izquierda + "px";
+      nube.style.top = (arriba ? boton.offsetTop - 10 : boton.offsetTop + boton.offsetHeight + 10) + "px";
+      nube.style.setProperty("--punta", (centro - izquierda) + "px");
+      formulario.style.maxHeight = Math.max(120, (arriba ? rect.top : innerHeight - rect.bottom) - 22) + "px";
+    }
+    function cerrarFicha() {
+      nube.hidden = true;
+      if (!multiple.checked) seleccion.clear();
+      actual = null;
+      marcar();
+    }
+    obtener("cerrar").onclick = () => {
+      cerrarFicha();
+      (multiple.checked ? completar : ancla())?.focus({preventScroll:true});
+    };
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && !nube.hidden) obtener("cerrar").click();
+    });
+    multiple.onchange = () => { seleccion.clear(); cerrarFicha(); };
+    completar.onclick = () => {
+      const fila = [...seleccion.values()].at(-1);
+      if (!fila) return;
+      numeroAncla = fila.numero;
+      ancla().scrollIntoView({block:"center", behavior:"instant"});
+      abrirFicha(fila);
+    };
+    window.addEventListener("resize", ubicar);
     function marcar() {
-      obtener("ir-comprador").hidden = !seleccion.size;
+      completar.hidden = !multiple.checked;
+      completar.disabled = !seleccion.size;
+      obtener("cantidad").textContent = multiple.checked ? seleccion.size + " de 10 elegidos" : "";
       for (const boton of obtener("tablero-marco").children) {
         const numero = Number(boton.dataset.numero);
         const marcado = seleccion.has(numero) || actual?.numero === numero;
+        boton.disabled = multiple.checked && !boton.classList.contains("disponible");
         boton.classList.toggle("marcado", marcado);
         boton.setAttribute("aria-pressed", String(marcado));
       }
     }
     function editar(fila) {
       const disponible = fila.estado === "disponible";
-      const iniciar = !disponible || !seleccion.size;
       aviso.textContent = "";
-      if (disponible) {
-        actual = null;
+      if (multiple.checked) {
+        if (!disponible) return;
+        nube.hidden = true;
         if (seleccion.has(fila.numero)) seleccion.delete(fila.numero);
         else if (seleccion.size < 10) seleccion.set(fila.numero, fila);
-        else { aviso.textContent = "Ya elegiste diez números."; return; }
-      } else {
-        seleccion.clear();
-        actual = fila;
+        else { aviso.textContent = "Ya elegiste diez números."; }
+        marcar();
+        return;
       }
+      seleccion.clear();
+      actual = disponible ? null : fila;
+      if (disponible) seleccion.set(fila.numero, fila);
+      numeroAncla = fila.numero;
       marcar();
-      formulario.hidden = !actual && !seleccion.size;
-      if (formulario.hidden) return;
+      abrirFicha(fila);
+    }
+    function abrirFicha(fila) {
+      const disponible = fila.estado === "disponible";
+      nube.hidden = false;
       for (const opcion of formulario.elements.accion.options)
         opcion.disabled = disponible && ["guardar", "liberar"].includes(opcion.value);
-      obtener("titulo").textContent = disponible ? "Selección: " + [...seleccion.keys()].map(formato).join(", ") :
+      obtener("titulo").textContent = multiple.checked ? "Números " + [...seleccion.keys()].map(formato).join(", ") :
         "Número " + formato(fila.numero) + " · " + estados[fila.estado];
       obtener("vencimiento").textContent = fila.vence ? "Apartado hasta " +
         new Date(fila.vence * 1000).toLocaleString("es-AR", {timeZone: "America/Argentina/Buenos_Aires"}) + " (Argentina)" : "";
-      if (iniciar) {
-        for (const campo of ["nombre", "apellido", "contacto"]) formulario.elements[campo].value = fila[campo] || "";
-        formulario.elements.accion.value = disponible ? "reservar" : "guardar";
-      }
-      if (!disponible) formulario.scrollIntoView({block: "nearest"});
+      for (const campo of ["nombre", "apellido", "contacto"]) formulario.elements[campo].value = fila[campo] || "";
+      formulario.elements.accion.value = disponible ? "reservar" : "guardar";
+      ubicar();
+      obtener("titulo").focus({preventScroll:true});
     }
     async function cargar() {
       const turno = ++lectura;
@@ -125,10 +183,11 @@
         })) {
           seleccion.clear();
           actual = null;
-          formulario.hidden = true;
+          nube.hidden = true;
           aviso.textContent = "La selección cambió. Volvé a elegir los números.";
         }
         marcar();
+        ubicar();
       } catch { aviso.textContent = "No pudimos cargar el tablero."; }
     }
     formulario.onsubmit = async e => {
@@ -150,7 +209,7 @@
         });
         if (!r.ok) throw Error(await r.json());
         if (!rapido || actual?.numero === datos.numero) {
-          formulario.hidden = true;
+          nube.hidden = true;
           actual = null;
           seleccion.clear();
         }
