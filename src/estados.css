@@ -2,7 +2,7 @@
 .etiqueta { padding:.3rem .65rem; border-radius:.4rem; font-size:.9rem; }
 :is(#tablero-marco,#grilla,.leyenda-estados) .disponible { background:#d8f2dd; color:#14532d; }
 :is(#tablero-marco,#grilla,.leyenda-estados,#reservas-rapidas) .apartado { background:#e1e3e6; color:#374151; }
-:is(#tablero-marco,#grilla,.leyenda-estados) .reservado { background:#ffea93; color:#573e00; }
+:is(#tablero-marco,#grilla,.leyenda-estados,#ventas-pendientes) .reservado { background:#ffea93; color:#573e00; }
 :is(#tablero-marco,#grilla,.leyenda-estados) .revision { background:#ffbf81; color:#662900; }
 :is(#tablero-marco,#grilla,.leyenda-estados) .pagado { background:#fac5c6; color:#7e2029; }
 :is(#grilla,#tablero-marco) button.marcado { background:#262332; color:white; outline:3px solid #584575; }
@@ -25,11 +25,17 @@
 #comprador :is(input,select) { width:100%; padding:.45rem .6rem; font-family:inherit; font-size:1rem; border:1px solid var(--borde); border-radius:8px; background:white; color:var(--tinta); }
 #comprador button:not(#cerrar) { margin-top:.4rem; width:100%; }
 #chat-reserva:not([hidden]) { display:block; margin:1rem 0; text-decoration:underline; }
-#apartados { margin:1rem 0; }
-#reservas-rapidas { display:flex; flex-wrap:wrap; gap:.5rem; }
-#reservas-rapidas button { max-width:100%; overflow-wrap:anywhere; }
+.pendientes-panel > div { margin:1rem 0; }
+.lista-pendientes { display:flex; flex-wrap:wrap; gap:.5rem; }
+.lista-pendientes button { max-width:100%; overflow-wrap:anywhere; }
+
+#venta p { margin:.8rem 0 1rem; overflow-wrap:anywhere; }
+#venta form { display:flex; justify-content:flex-end; gap:.5rem; flex-wrap:wrap; }
+#venta [value="vender"] { background:var(--ciruela); color:white; }
 
 @media (min-width: 960px) {
+  .pendientes-panel { display:flex; gap:1rem; }
+  .pendientes-panel > div { flex:1; min-width:0; }
   .panel-marco :is(header, main) { width:min(96%, 1600px); }
   .panel-marco header { padding:8px 0; }
   .panel-marco section { padding:12px 0; }
@@ -49,9 +55,9 @@
   #leyenda { margin:8px 0 4px; }
   #leyenda .etiqueta { font-size:.72rem; }
   .opciones-numeros { min-height:30px; margin:4px 0 8px; }
-  #apartados { margin:6px 0; }
-  #reservas-rapidas { flex-wrap:nowrap; overflow-x:auto; }
-  #reservas-rapidas button { flex:none; }
+  .pendientes-panel > div { margin:6px 0; }
+  .lista-pendientes { flex-wrap:nowrap; overflow-x:auto; }
+  .lista-pendientes button { flex:none; }
   #tablero-marco { grid-template-columns:repeat(20, minmax(0,1fr)); gap:4px; }
   #tablero-marco button { height:clamp(25px, calc((100dvh - 355px) / 10), 48px); padding:0 2px; }
 }

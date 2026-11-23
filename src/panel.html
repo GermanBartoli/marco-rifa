@@ -22,10 +22,24 @@
       <p>Tocá un número para ver o editar los datos del comprador.</p>
       <button id="actualizar">Actualizar</button>
       </div>
-      <div id="apartados" hidden>
-        <h3>Apartados por una hora</h3>
-        <div id="reservas-rapidas"></div>
+      <div class="pendientes-panel">
+        <div id="apartados" hidden>
+          <h3>Apartados por una hora</h3>
+          <div id="reservas-rapidas" class="lista-pendientes"></div>
+        </div>
+        <div id="reservados" hidden>
+          <h3>Reservados por Marco</h3>
+          <div id="ventas-pendientes" class="lista-pendientes"></div>
+        </div>
       </div>
+      <dialog id="venta" aria-labelledby="titulo-venta" aria-describedby="detalle-venta">
+        <h3 id="titulo-venta">Confirmar venta</h3>
+        <p id="detalle-venta"></p>
+        <form method="dialog">
+          <button value="cancelar" autofocus>Cancelar</button>
+          <button value="vender">Marcar como vendido</button>
+        </form>
+      </dialog>
       <p id="estado" role="status"></p>
       <div id="leyenda" class="leyenda-estados"></div>
       <div class="opciones-numeros">
@@ -159,6 +173,36 @@
       ubicar();
       obtener("titulo").focus({preventScroll:true});
     }
+    const venta = obtener("venta");
+    let ventaPendiente;
+    venta.addEventListener("close", () => {
+      const datos = ventaPendiente;
+      ventaPendiente = null;
+      if (venta.returnValue === "vender" && datos) guardar(datos, true);
+    });
+    function listarPendientes(filas, estado, grupo, lista) {
+      const pendientes = filas.filter(fila => fila.estado === estado);
+      const vender = estado === "reservado";
+      obtener(grupo).hidden = !pendientes.length;
+      obtener(lista).replaceChildren(...pendientes.map(fila => {
+        const boton = document.createElement("button");
+        const nombre = [fila.nombre, fila.apellido].filter(Boolean).join(" ");
+        const detalle = [formato(fila.numero), nombre].filter(Boolean).join(" · ");
+        boton.className = estado;
+        boton.textContent = (vender ? "Vender " : "Reservar ") + detalle;
+        boton.onclick = () => {
+          if (guardando) return;
+          const datos = {accion: vender ? "pagar" : "reservar", numero: fila.numero,
+            referencia: fila.referencia, version: fila.version};
+          if (!vender) return guardar(datos, true);
+          ventaPendiente = datos;
+          obtener("detalle-venta").textContent = "¿Confirmás el pago del número " + detalle + "?";
+          venta.returnValue = "";
+          venta.showModal();
+        };
+        return boton;
+      }));
+    }
     async function cargar() {
       const turno = ++lectura;
       try {
@@ -176,18 +220,8 @@
           b.onclick = () => { if (!guardando) editar(fila); };
           return b;
         }));
-        const apartados = filas.filter(fila => fila.estado === "apartado");
-        obtener("apartados").hidden = !apartados.length;
-        obtener("reservas-rapidas").replaceChildren(...apartados.map(fila => {
-          const boton = document.createElement("button");
-          const nombre = [fila.nombre, fila.apellido].filter(Boolean).join(" ");
-          boton.className = "apartado";
-          boton.textContent = "Reservar " + formato(fila.numero) + " · " + nombre;
-          boton.onclick = () => guardar({
-            accion: "reservar", numero: fila.numero, referencia: fila.referencia, version: fila.version
-          }, true);
-          return boton;
-        }));
+        listarPendientes(filas, "apartado", "apartados", "reservas-rapidas");
+        listarPendientes(filas, "reservado", "reservados", "ventas-pendientes");
         const elegidos = actual ? [actual] : [...seleccion.values()];
         if (elegidos.some(anterior => {
           const fila = filas.find(f => f.numero === anterior.numero);
@@ -225,7 +259,7 @@
           actual = null;
           seleccion.clear();
         }
-        aviso.textContent = rapido ? "Número " + formato(datos.numero) + " reservado por Marco." : "Cambios guardados.";
+        aviso.textContent = rapido ? "Número " + formato(datos.numero) + (datos.accion === "pagar" ? " vendido." : " reservado por Marco.") : "Cambios guardados.";
       } catch (error) { aviso.textContent = error.message; }
       finally { await cargar(); guardando = false; }
     }
