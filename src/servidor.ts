@@ -11,6 +11,8 @@ import pose from "../originales/marco-fondo-gris.png";
 import foto from "./marco.webp";
 
 import solaz from "../originales/solaz.svg";
+import logoTello from "../originales/tello-mercado.png";
+import desayunoLola from "./desayuno-lola.webp";
 import granja from "../originales/lagranjadetello.jpg";
 
 import ueme from "../originales/ueme.webp";
@@ -51,6 +53,8 @@ const imagenes = new Map<string, [Uint8Array, string]>([
   ["/dm-sans.woff2", [dm_sans, "font/woff2"]],
   ["/marco-fondo-gris.png", [pose, "image/png"]],
   ["/marco.webp", [foto, "image/webp"]],
+  ["/tello-mercado.png", [logoTello, "image/png"]],
+  ["/desayuno-lola.webp", [desayunoLola, "image/webp"]],
   ["/lagranjadetello.jpg", [granja, "image/jpeg"]],
   ["/ueme.webp", [ueme, "image/webp"]],
   ["/lodelola_bar.jpg", [lola, "image/jpeg"]],
