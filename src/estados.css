@@ -28,3 +28,30 @@
 #apartados { margin:1rem 0; }
 #reservas-rapidas { display:flex; flex-wrap:wrap; gap:.5rem; }
 #reservas-rapidas button { max-width:100%; overflow-wrap:anywhere; }
+
+@media (min-width: 960px) {
+  .panel-marco :is(header, main) { width:min(96%, 1600px); }
+  .panel-marco header { padding:8px 0; }
+  .panel-marco section { padding:12px 0; }
+  .encabezado-tablero {
+    display:grid;
+    grid-template-columns:auto 1fr auto;
+    align-items:baseline;
+    gap:2px 14px;
+  }
+  .encabezado-tablero small { display:none; }
+  .encabezado-tablero h1 { font-size:1.8rem; }
+  .encabezado-tablero h2 { margin:0; font-size:1.1rem; }
+  .encabezado-tablero p { font-size:.85rem; }
+  .encabezado-tablero p:first-of-type { grid-column:1 / 3; }
+  .encabezado-tablero p:last-of-type { grid-column:1 / 3; }
+  #actualizar { grid-column:3; grid-row:1 / 4; align-self:center; }
+  #leyenda { margin:8px 0 4px; }
+  #leyenda .etiqueta { font-size:.72rem; }
+  .opciones-numeros { min-height:30px; margin:4px 0 8px; }
+  #apartados { margin:6px 0; }
+  #reservas-rapidas { flex-wrap:nowrap; overflow-x:auto; }
+  #reservas-rapidas button { flex:none; }
+  #tablero-marco { grid-template-columns:repeat(20, minmax(0,1fr)); gap:4px; }
+  #tablero-marco button { height:clamp(25px, calc((100dvh - 355px) / 10), 48px); padding:0 2px; }
+}
