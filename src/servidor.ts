@@ -164,7 +164,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     }
     if (ejecutar && ruta === "/admin/actualizar") {
       const datos = await req.json<{ numero: number; referencia?: string; accion: string;
-        version?: number; nombre?: string; apellido?: string; contacto?: string }>();
+        seleccion?: { numero: number; version: number }[]; version?: number; nombre?: string; apellido?: string; contacto?: string }>();
       const { numero, referencia, accion } = datos;
       if (!["reservar", "revisar", "pagar", "liberar", "guardar"].includes(accion))
         return json("Acción inválida.", 400);
@@ -178,6 +178,29 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
         liberar: "estado='disponible', fase=NULL, referencia=NULL, nombre=NULL, apellido=NULL, contacto=NULL, origen=NULL, vence=NULL",
         guardar: "estado=estado",
       };
+      if (datos.seleccion !== undefined) {
+        const seleccion = datos.seleccion;
+        if (!comprador || !["reservar", "revisar", "pagar"].includes(accion) ||
+            !Array.isArray(seleccion) || seleccion.length < 1 || seleccion.length > 5 ||
+            !seleccion.every(f => f && Number.isInteger(f.numero) && f.numero > 0 && Number.isInteger(f.version)) ||
+            new Set(seleccion.map(f => f.numero)).size !== seleccion.length)
+          return json("Elegí entre uno y cinco números disponibles y revisá los datos.", 400);
+        const pares = seleccion.map(() => "(?,?)").join(",");
+        const resultado = await env.DB.prepare(
+          `WITH elegibles AS MATERIALIZED (
+             SELECT numero FROM marco_rifa_numeros WHERE edicion=1 AND (numero,version) IN (VALUES ${pares})
+             AND (${activo})='disponible'
+           )
+           UPDATE marco_rifa_numeros SET ${cambios[accion]}, nombre=?, apellido=?, contacto=?,
+             referencia=?, origen=NULL, version=version+1
+           WHERE edicion=1 AND numero IN (SELECT numero FROM elegibles)
+             AND (SELECT count(*) FROM elegibles)=?
+             AND (SELECT count(*) FROM marco_rifa_numeros WHERE edicion=1 AND contacto=? AND (${activo})!='disponible') + ? <= 5`,
+        ).bind(...seleccion.flatMap(f => [f.numero, f.version]), comprador.nombre, comprador.apellido,
+          comprador.contacto, crypto.randomUUID(), seleccion.length, comprador.contacto, seleccion.length).run();
+        return resultado.meta.changes ? json("Actualizado.") :
+          json("Algún número cambió o el comprador supera el límite de cinco números por WhatsApp.", 409);
+      }
       const campos = [cambios[accion], "version=version+1"];
       const valores: (string | number)[] = [];
       if (comprador && accion !== "liberar") {
@@ -339,7 +362,9 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       )
       .run();
     return resultado.meta.changes
-      ? json({ referencia, total: numeros.length * precio }, 201)
+      ? json({ referencia, total: numeros.length * precio,
+          alias: /\bAlias\s*:\s*([\w.-]+)/i.exec(String(edicion.instrucciones))?.[1].replace(/\.$/, "") || "",
+        }, 201)
       : json(
           "Algún número ya está ocupado o la selección supera el límite de cinco números por WhatsApp.",
           409,

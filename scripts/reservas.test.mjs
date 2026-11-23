@@ -58,7 +58,7 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   const reserva = { numero: 1, nombre: "Prueba", contacto: "3510000000" };
   assert.equal((await pedir("/api/reservas", reserva)).status, 403);
   sqlite.exec(
-    "UPDATE marco_rifa_ediciones SET abierta=1,instrucciones='Prueba local'",
+    "UPDATE marco_rifa_ediciones SET abierta=1,instrucciones='Alias: PRUEBA.LOCAL · Transferencia'",
   );
   for (const hora of ["2026-11-22T10:59:59Z","2026-11-23T01:00:00Z"]) {
     instante = hora;
@@ -114,6 +114,7 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   assert.equal(otro.status, 201);
   const datos = await otro.json();
   assert.equal(datos.total, 35000);
+  assert.equal(datos.alias, "PRUEBA.LOCAL");
   assert.equal((await pedir("/api/reservas", {numero:11,nombre:"Ana",contacto:"+54 9 3511234567"})).status, 409);
   const inicial = (await (await pedir("/admin/reservas", undefined, true)).json()).find(n => n.numero === 6);
   const ahora = sqlite.prepare("SELECT unixepoch() AS ahora").get().ahora;
@@ -150,5 +151,17 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   const vendido = (await reservasAdmin()).find(fila => fila.numero === 7);
   assert.notEqual(vendido.referencia, datos.referencia);
   assert.equal(vendido.estado, "pagado");
+  const asignar = (numeros, version = 0) => actualizar({
+    ...manual, seleccion: numeros.map(numero => ({numero, version})), accion: "pagar",
+  });
+  assert.equal((await asignar([12, 13, 13])).status, 400);
+  assert.equal((await asignar([12, 13], 1)).status, 409);
+  assert.equal((await asignar([12, 13, 7])).status, 409);
+  assert.equal((await asignar([12, 13, 14, 15, 16])).status, 409);
+  assert.equal((await asignar([12, 13, 14, 15])).status, 200);
+  assert.equal((await asignar([12, 13, 14, 15])).status, 409);
+  const lote = (await reservasAdmin()).filter(fila => fila.numero >= 12 && fila.numero <= 15);
+  assert.equal(new Set(lote.map(fila => fila.referencia)).size, 1);
+  assert.ok(lote.every(fila => fila.nombre === "Luz" && fila.estado === "pagado" && fila.version === 1));
   sqlite.close();
 });

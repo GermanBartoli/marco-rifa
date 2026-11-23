@@ -15,9 +15,11 @@
       <h1>Panel de Marco<span>.</span></h1>
       <h2>Reservas y pagos</h2>
       <p>Confirmá cada pago después de verificar la acreditación.</p>
+      <p>Elegí hasta cinco números disponibles para cargar un comprador. Para editar un número ocupado, seleccionalo por separado.</p>
       <button id="actualizar">Actualizar</button>
       <p id="estado" role="status"></p>
       <div id="leyenda" class="leyenda-estados"></div>
+      <a id="ir-comprador" href="#comprador" hidden>Completar datos del comprador ↓</a>
       <div id="tablero-marco" class="grilla" aria-label="Estado de los números"></div>
       <form id="comprador" hidden>
         <h3 id="titulo"></h3><p id="vencimiento"></p>
@@ -37,6 +39,7 @@
     const estados = /*ESTADOS*/null;
     const obtener = id => document.getElementById(id);
     const formulario = obtener("comprador"), aviso = obtener("estado");
+    const seleccion = new Map();
     let actual, guardando = false, lectura = 0;
     for (const [clave, texto] of Object.entries(estados)) {
       const etiqueta = document.createElement("span");
@@ -44,20 +47,43 @@
       etiqueta.textContent = texto;
       obtener("leyenda").append(etiqueta);
     }
-    function editar(fila) {
-      actual = fila;
-      const disponible = fila.estado === "disponible";
-      formulario.hidden = false;
-      for (const opcion of formulario.elements.accion.options) {
-        opcion.disabled = disponible && ["guardar", "liberar"].includes(opcion.value);
+    const formato = numero => String(numero).padStart(3, "0");
+    function marcar() {
+      obtener("ir-comprador").hidden = !seleccion.size;
+      for (const boton of obtener("tablero-marco").children) {
+        const numero = Number(boton.dataset.numero);
+        const marcado = seleccion.has(numero) || actual?.numero === numero;
+        boton.classList.toggle("marcado", marcado);
+        boton.setAttribute("aria-pressed", String(marcado));
       }
+    }
+    function editar(fila) {
+      const disponible = fila.estado === "disponible";
+      const iniciar = !disponible || !seleccion.size;
       aviso.textContent = "";
-      obtener("titulo").textContent = "Número " + fila.numero + " · " + estados[fila.estado];
+      if (disponible) {
+        actual = null;
+        if (seleccion.has(fila.numero)) seleccion.delete(fila.numero);
+        else if (seleccion.size < 5) seleccion.set(fila.numero, fila);
+        else { aviso.textContent = "Ya elegiste cinco números."; return; }
+      } else {
+        seleccion.clear();
+        actual = fila;
+      }
+      marcar();
+      formulario.hidden = !actual && !seleccion.size;
+      if (formulario.hidden) return;
+      for (const opcion of formulario.elements.accion.options)
+        opcion.disabled = disponible && ["guardar", "liberar"].includes(opcion.value);
+      obtener("titulo").textContent = disponible ? "Selección: " + [...seleccion.keys()].map(formato).join(", ") :
+        "Número " + formato(fila.numero) + " · " + estados[fila.estado];
       obtener("vencimiento").textContent = fila.vence ? "Apartado hasta " +
         new Date(fila.vence * 1000).toLocaleString("es-AR", {timeZone: "America/Argentina/Buenos_Aires"}) + " (Argentina)" : "";
-      for (const campo of ["nombre", "apellido", "contacto"]) formulario.elements[campo].value = fila[campo] || "";
-      formulario.elements.accion.value = disponible ? "reservar" : "guardar";
-      formulario.scrollIntoView({block: "nearest"});
+      if (iniciar) {
+        for (const campo of ["nombre", "apellido", "contacto"]) formulario.elements[campo].value = fila[campo] || "";
+        formulario.elements.accion.value = disponible ? "reservar" : "guardar";
+      }
+      if (!disponible) formulario.scrollIntoView({block: "nearest"});
     }
     async function cargar() {
       const turno = ++lectura;
@@ -70,34 +96,42 @@
           const b = document.createElement("button");
           b.textContent = String(fila.numero).padStart(3, "0");
           b.className = fila.estado;
+          b.dataset.numero = fila.numero;
           b.title = [estados[fila.estado], fila.nombre, fila.apellido].filter(Boolean).join(" · ");
           b.setAttribute("aria-label", b.textContent + ", " + b.title);
           b.onclick = () => { if (!guardando) editar(fila); };
           return b;
         }));
-        if (actual && !formulario.hidden) {
-          const fila = filas.find(f => f.numero === actual.numero);
-          if (fila?.version !== actual.version || fila?.referencia !== actual.referencia) {
-            formulario.hidden = true;
-            aviso.textContent = "Este número cambió. Seleccionalo de nuevo para editar.";
-          }
+        const elegidos = actual ? [actual] : [...seleccion.values()];
+        if (elegidos.some(anterior => {
+          const fila = filas.find(f => f.numero === anterior.numero);
+          return !fila || fila.estado !== anterior.estado || fila.version !== anterior.version || fila.referencia !== anterior.referencia;
+        })) {
+          seleccion.clear();
+          actual = null;
+          formulario.hidden = true;
+          aviso.textContent = "La selección cambió. Volvé a elegir los números.";
         }
+        marcar();
       } catch { aviso.textContent = "No pudimos cargar el tablero."; }
     }
     formulario.onsubmit = async e => {
       e.preventDefault();
-      if (guardando || !actual) return;
+      if (guardando || (!actual && !seleccion.size)) return;
       const campos = Object.fromEntries(new FormData(formulario));
       if (campos.accion === "liberar" && !confirm("¿Liberar el número " + actual.numero + "?")) return;
       guardando = true;
       try {
         const r = await fetch("/panel/rifa/actualizar", {
           method: "POST", headers: {"Content-Type":"application/json"},
-          body: JSON.stringify({...campos, numero:actual.numero, referencia:actual.referencia, version:actual.version}),
+          body: JSON.stringify(actual
+            ? {...campos, numero:actual.numero, referencia:actual.referencia, version:actual.version}
+            : {...campos, seleccion:[...seleccion.values()].map(({numero, version}) => ({numero, version}))}),
         });
         if (!r.ok) throw Error(await r.json());
         formulario.hidden = true;
         actual = null;
+        seleccion.clear();
         aviso.textContent = "Cambios guardados.";
       } catch (error) { aviso.textContent = error.message; }
       finally { guardando = false; await cargar(); }

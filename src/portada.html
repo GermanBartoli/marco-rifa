@@ -931,8 +931,15 @@
           const d = await r.json();
           if (!r.ok) { await cargar(); throw Error(d); }
           const lista = elegidos.map(formatoNumero).join(", ");
-          const mensaje = "Hola, Marco. Soy " + [datos.nombre, datos.apellido].filter(Boolean).join(" ") +
-            (elegidos.length === 1 ? ". Aparté el número " : ". Aparté los números ") + lista + " por " + dinero(d.total) + ". Te envío el comprobante.";
+          const nombre = [datos.nombre, datos.apellido].map(parte => (parte || "").trim()).filter(Boolean).join(" ");
+          const mensaje = [
+            "¡Hola, Marco! Soy " + nombre + ". Aparté " +
+              (elegidos.length === 1 ? "un número" : elegidos.length + " números") + " para acompañarte en el sorteo.",
+            (elegidos.length === 1 ? "Mi número: " : "Mis números: ") + lista,
+            "Total a transferir: " + dinero(d.total),
+            d.alias ? "Alias: " + d.alias : "",
+            "Te paso el comprobante por acá cuando haga la transferencia. ¡Éxitos!",
+          ].filter(Boolean).join("\n");
           const chat = $("chat-reserva");
           chat.href = "https://wa.me/5493516776352?text=" + encodeURIComponent(mensaje);
           seleccion.clear();

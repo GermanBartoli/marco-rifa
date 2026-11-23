@@ -5,7 +5,7 @@
 :is(#tablero-marco,#grilla,.leyenda-estados) .reservado { background:#ffea93; color:#573e00; }
 :is(#tablero-marco,#grilla,.leyenda-estados) .revision { background:#ffbf81; color:#662900; }
 :is(#tablero-marco,#grilla,.leyenda-estados) .pagado { background:#fac5c6; color:#7e2029; }
-#grilla button.marcado { background:#262332; color:white; outline:3px solid #584575; }
+:is(#grilla,#tablero-marco) button.marcado { background:#262332; color:white; outline:3px solid #584575; }
 .pasos-reserva { padding-inline-start:1.5rem; line-height:1.6; }
 #comprador { margin:1rem 0; }
 #comprador label { display:grid; gap:.25rem; margin:.7rem 0; max-width:28rem; }
