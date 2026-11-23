@@ -55,3 +55,8 @@
   #tablero-marco { grid-template-columns:repeat(20, minmax(0,1fr)); gap:4px; }
   #tablero-marco button { height:clamp(25px, calc((100dvh - 355px) / 10), 48px); padding:0 2px; }
 }
+.panel-marco header { flex-wrap:wrap; }
+.acciones-panel { gap:6px; margin-left:auto; }
+.acciones-panel a { display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border:1px solid var(--borde); border-radius:8px; background:white; white-space:nowrap; }
+.acciones-panel a[target="_blank"] { background:var(--ciruela); color:white; border-color:var(--ciruela); }
+.acciones-panel a:hover { border-color:var(--uva); }
