@@ -60,11 +60,13 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   sqlite.exec(
     "UPDATE marco_rifa_ediciones SET abierta=1,instrucciones='Alias: PRUEBA.LOCAL · Transferencia'",
   );
-  for (const hora of ["2026-11-22T10:59:59Z","2026-11-23T01:00:00Z"]) {
+  for (const hora of ["2026-11-22T08:59:59Z","2026-11-22T15:00:00Z"]) {
     instante = hora;
     assert.equal((await pedir("/api/reservas", reserva)).status, 403);
   }
-  instante = "2026-11-23T00:59:59Z";
+  instante = "2026-11-22T14:59:59Z";
+  assert.equal((await tablero()).edicion.enHorario, true);
+  instante = "2026-11-22T09:00:00Z";
   const res = await pedir("/api/reservas", reserva);
   assert.equal(res.status, 201);
   const { referencia } = await res.json();
@@ -120,7 +122,7 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   assert.equal((await pedir("/api/reservas", {numero:11,nombre:"Ana",contacto:"+54 9 3511234567"})).status, 409);
   const inicial = (await (await pedir("/admin/reservas", undefined, true)).json()).find(n => n.numero === 6);
   const ahora = sqlite.prepare("SELECT unixepoch() AS ahora").get().ahora;
-  assert.ok(inicial.vence - ahora <= 3600 && inicial.vence - ahora >= 3598);
+  assert.ok(inicial.vence - ahora <= 28800 && inicial.vence - ahora >= 28798);
   assert.equal(inicial.estado, "apartado");
   for (const [indice, [accion, esperado]] of [["reservar","reservado"],["revisar","revision"],["pagar","pagado"]].entries()) {
     const cambio = {numero:6,referencia:datos.referencia,accion,version:inicial.version+indice,nombre:"María",apellido:"Paz",contacto:inicial.contacto};

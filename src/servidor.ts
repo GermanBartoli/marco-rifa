@@ -78,7 +78,7 @@ const recurso = (texto: string, tipo: string) =>
     headers: { ...cabeceras, "Content-Type": tipo + "; charset=utf-8" },
   });
 const estados = {
-  disponible: "Disponible", apartado: "Apartado por una hora", reservado: "Reservado por Marco",
+  disponible: "Disponible", apartado: "Apartado por 8 horas", reservado: "Reservado por Marco",
   revision: "Comprobante en revisión", pagado: "Vendido",
 };
 const precio = 7000;
@@ -89,7 +89,7 @@ const horaArgentina = new Intl.DateTimeFormat("es-AR", {
 });
 function enHorario() {
   const hora = Number(horaArgentina.format(Date.now()));
-  return hora >= 8 && hora < 22;
+  return hora >= 6 && hora < 12;
 }
 function telefono(valor: unknown) {
   if (typeof valor !== "string" || !/^\+?[\d ()-]{7,24}$/.test(valor)) return "";
@@ -310,7 +310,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     ).first();
     if (!edicion?.abierta || !edicion.instrucciones)
       return json("Las reservas todavía están cerradas.", 403);
-    if (!enHorario()) return json("Podés reservar de 08:00 a 22:00, hora argentina.", 403);
+    if (!enHorario()) return json("Podés reservar de 06:00 a 12:00, hora argentina.", 403);
     const {
       numero,
       numeros = numero === undefined ? [] : [numero],
@@ -345,7 +345,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
       `WITH elegibles AS MATERIALIZED (
         SELECT numero FROM marco_rifa_numeros WHERE edicion=1 AND numero IN (${marcas}) AND (${activo})='disponible'
       )
-      UPDATE marco_rifa_numeros SET estado='reservado',fase='apartado',nombre=?,apellido=?,contacto=?,origen=?,referencia=?,vence=unixepoch()+3600,version=version+1
+      UPDATE marco_rifa_numeros SET estado='reservado',fase='apartado',nombre=?,apellido=?,contacto=?,origen=?,referencia=?,vence=unixepoch() + 8 * 60 * 60,version=version+1
       WHERE edicion=1 AND numero IN (SELECT numero FROM elegibles)
       AND (SELECT count(*) FROM elegibles)=?
       AND EXISTS (SELECT 1 FROM marco_rifa_ediciones WHERE id=1 AND abierta=1 AND instrucciones!='')

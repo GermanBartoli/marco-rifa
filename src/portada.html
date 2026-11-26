@@ -129,8 +129,8 @@
       <section id="numeros" class="ancho bloque tablero">
         <h2>Elegí tu número<span>.</span></h2>
         <ol class="pasos-reserva">
-          <li>Elegí hasta 20 números y tocá <strong>Continuar</strong>. Podés reservar de 08:00 a 22:00 (Argentina).</li>
-          <li>Revisá el monto y completá tus datos. Al confirmar, los números quedan apartados durante una hora.</li>
+          <li>Elegí hasta 20 números y tocá <strong>Continuar</strong>. Podés reservar de 06:00 a 12:00 (Argentina).</li>
+          <li>Revisá el monto y completá tus datos. Al confirmar, los números quedan apartados durante 8 horas.</li>
           <li>Transferí el total y adjuntá el comprobante en el chat de WhatsApp de Marco. Marco actualizará el estado.</li>
         </ol>
         <div id="leyenda" class="leyenda-estados"></div>
@@ -583,7 +583,7 @@
             required
             maxlength="24"
             autocomplete="tel" /></label
-        ><button class="boton">Apartar por una hora y abrir WhatsApp</button>
+        ><button class="boton">Apartar por 8 horas y abrir WhatsApp</button>
       </form>
       <a id="chat-reserva" target="_blank" rel="noopener noreferrer" hidden>Abrir WhatsApp de Marco para adjuntar el comprobante ↗</a>
       <p id="resultado" role="status"></p>
@@ -909,7 +909,7 @@
           const ocupados = [...seleccion].filter(numero => !numeros.some(n => n.numero === numero && n.estado === "disponible"));
           ocupados.forEach(n => seleccion.delete(n));
           $("modo").textContent = !edicion.abierta ? "La edición está cerrada." :
-            edicion.enHorario ? "Reservas abiertas." : "Fuera de horario. Volvé a partir de las 08:00 de Argentina.";
+            edicion.enHorario ? "Reservas abiertas." : "Fuera de horario. Volvé a partir de las 06:00 de Argentina.";
           $("cuenta").textContent = numeros.filter(n => n.estado === "disponible").length + " de " + numeros.length + " disponibles";
           if (ocupados.length) $("aviso").textContent = "Ya se ocuparon: " + ocupados.map(formatoNumero).join(", ");
           if (!$("chat-reserva").hidden && ficha.open) dibujar();
@@ -970,7 +970,7 @@
           mostrarNumeros(elegidos);
           $("agregar").hidden = true;
           mostrarImporte(elegidos.length, d.total);
-          $("resultado").textContent = "Apartados por una hora. Adjuntá el comprobante en WhatsApp.";
+          $("resultado").textContent = "Apartados por 8 horas. Adjuntá el comprobante en WhatsApp.";
           chat.hidden = false;
           if (ventanaChat && !ventanaChat.closed) ventanaChat.location.replace(chat.href);
           await cargar();
