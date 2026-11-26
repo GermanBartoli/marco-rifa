@@ -130,7 +130,7 @@
         <h2>Elegí tu número<span>.</span></h2>
         <ol class="pasos-reserva">
           <li>Elegí hasta 20 números y tocá <strong>Continuar</strong>. Podés reservar de 06:00 a 00:00 (Argentina).</li>
-          <li>Revisá el monto y completá tus datos. Al confirmar, los números quedan apartados durante 8 horas.</li>
+          <li>Revisá el monto y completá tus datos. Al confirmar, los números quedan apartados durante 24 horas.</li>
           <li>Transferí el total y adjuntá el comprobante en el chat de WhatsApp de Marco. Marco actualizará el estado.</li>
         </ol>
         <div id="leyenda" class="leyenda-estados"></div>
@@ -583,7 +583,7 @@
             required
             maxlength="24"
             autocomplete="tel" /></label
-        ><button class="boton">Apartar por 8 horas y abrir WhatsApp</button>
+        ><button class="boton">Apartar por 24 horas y abrir WhatsApp</button>
       </form>
       <a id="chat-reserva" target="_blank" rel="noopener noreferrer" hidden>Abrir WhatsApp de Marco para adjuntar el comprobante ↗</a>
       <p id="resultado" role="status"></p>
@@ -970,7 +970,7 @@
           mostrarNumeros(elegidos);
           $("agregar").hidden = true;
           mostrarImporte(elegidos.length, d.total);
-          $("resultado").textContent = "Apartados por 8 horas. Adjuntá el comprobante en WhatsApp.";
+          $("resultado").textContent = "Apartados por 24 horas. Adjuntá el comprobante en WhatsApp.";
           chat.hidden = false;
           if (ventanaChat && !ventanaChat.closed) ventanaChat.location.replace(chat.href);
           await cargar();
