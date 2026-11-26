@@ -89,7 +89,7 @@ const horaArgentina = new Intl.DateTimeFormat("es-AR", {
 });
 function enHorario() {
   const hora = Number(horaArgentina.format(Date.now()));
-  return hora >= 6 && hora < 12;
+  return hora >= 6;
 }
 function telefono(valor: unknown) {
   if (typeof valor !== "string" || !/^\+?[\d ()-]{7,24}$/.test(valor)) return "";
@@ -310,7 +310,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     ).first();
     if (!edicion?.abierta || !edicion.instrucciones)
       return json("Las reservas todavía están cerradas.", 403);
-    if (!enHorario()) return json("Podés reservar de 06:00 a 12:00, hora argentina.", 403);
+    if (!enHorario()) return json("Podés reservar de 06:00 a 00:00, hora argentina.", 403);
     const {
       numero,
       numeros = numero === undefined ? [] : [numero],
