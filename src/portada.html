@@ -129,7 +129,7 @@
       <section id="numeros" class="ancho bloque tablero">
         <h2>Elegí tu número<span>.</span></h2>
         <ol class="pasos-reserva">
-          <li>Elegí hasta 20 números y tocá <strong>Continuar</strong>. Podés reservar de 06:00 a 00:00 (Argentina).</li>
+          <li>Elegí hasta 20 números y tocá <strong>Continuar</strong>. Podés reservar a cualquier hora.</li>
           <li>Revisá el monto y completá tus datos. Al confirmar, los números quedan apartados durante 24 horas.</li>
           <li>Transferí el total y adjuntá el comprobante en el chat de WhatsApp de Marco. Marco actualizará el estado.</li>
         </ol>
@@ -825,7 +825,7 @@
       const ficha = $("ficha"), formulario = ficha.querySelector("form");
       const dinero = n => "$" + n.toLocaleString("es-AR");
       const listaElegida = () => [...seleccion].map(formatoNumero).join(", ");
-      const disponibleAhora = () => edicion.abierta && edicion.enHorario;
+      const disponibleAhora = () => edicion.abierta;
       for (const [clave, texto] of Object.entries(estados)) {
         const etiqueta = document.createElement("span");
         etiqueta.className = "etiqueta " + clave;
@@ -908,8 +908,7 @@
           const foco = document.activeElement?.dataset.numero;
           const ocupados = [...seleccion].filter(numero => !numeros.some(n => n.numero === numero && n.estado === "disponible"));
           ocupados.forEach(n => seleccion.delete(n));
-          $("modo").textContent = !edicion.abierta ? "La edición está cerrada." :
-            edicion.enHorario ? "Reservas abiertas." : "Fuera de horario. Volvé a partir de las 06:00 de Argentina.";
+          $("modo").textContent = edicion.abierta ? "Reservas abiertas." : "La edición está cerrada.";
           $("cuenta").textContent = numeros.filter(n => n.estado === "disponible").length + " de " + numeros.length + " disponibles";
           if (ocupados.length) $("aviso").textContent = "Ya se ocuparon: " + ocupados.map(formatoNumero).join(", ");
           if (!$("chat-reserva").hidden && ficha.open) dibujar();

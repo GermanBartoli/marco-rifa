@@ -84,13 +84,6 @@ const estados = {
 const precio = 7000;
 const activo = `CASE WHEN estado='reservado' AND vence<=unixepoch() THEN 'disponible'
   WHEN estado='reservado' THEN coalesce(fase,'apartado') ELSE estado END`;
-const horaArgentina = new Intl.DateTimeFormat("es-AR", {
-  timeZone: "America/Argentina/Buenos_Aires", hour: "2-digit", hourCycle: "h23",
-});
-function enHorario() {
-  const hora = Number(horaArgentina.format(Date.now()));
-  return hora >= 6;
-}
 function telefono(valor: unknown) {
   if (typeof valor !== "string" || !/^\+?[\d ()-]{7,24}$/.test(valor)) return "";
   let digitos = valor.replace(/\D/g, "");
@@ -298,7 +291,7 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
         `SELECT numero,${activo} AS estado,nombre,apellido FROM marco_rifa_numeros WHERE edicion=1 ORDER BY numero`,
       ),
     ]);
-    return json({ edicion: { ...edicion.results[0], enHorario: enHorario(), precio },
+    return json({ edicion: { ...edicion.results[0], enHorario: true, precio },
       numeros: numeros.results.map(({numero, estado, nombre, apellido}) => ({
         numero, estado, titular: estado === "disponible" ? "" : enmascarar([nombre, apellido].filter(Boolean).join(" ")),
       })),
@@ -310,7 +303,6 @@ async function atender(req: Request, env: Entorno): Promise<Response> {
     ).first();
     if (!edicion?.abierta || !edicion.instrucciones)
       return json("Las reservas todavía están cerradas.", 403);
-    if (!enHorario()) return json("Podés reservar de 06:00 a 00:00, hora argentina.", 403);
     const {
       numero,
       numeros = numero === undefined ? [] : [numero],
