@@ -228,7 +228,11 @@
           ventaPendiente = datos;
           obtener("detalle-venta").textContent = "¿Confirmás el pago del número " + detalle + "?";
           venta.returnValue = "";
-          venta.showModal();
+          if (typeof venta.showModal === "function") venta.showModal();
+          else {
+            ventaPendiente = null;
+            if (confirm(obtener("detalle-venta").textContent)) guardar(datos, true);
+          }
         };
         return boton;
       }));
@@ -283,7 +287,11 @@
           method: "POST", headers: {"Content-Type":"application/json"},
           body: JSON.stringify(datos),
         });
-        if (!r.ok) throw Error(await r.json());
+        if (!r.headers.get("Content-Type")?.includes("application/json"))
+          throw Error("El panel no confirmó el cambio. Recargá la página y revisá tu sesión.");
+        const resultado = await r.json();
+        if (!r.ok) throw Error(resultado);
+        if (resultado !== "Actualizado.") throw Error("No se pudo confirmar el cambio.");
         if (!rapido || actual?.numero === datos.numero) {
           nube.hidden = true;
           actual = null;

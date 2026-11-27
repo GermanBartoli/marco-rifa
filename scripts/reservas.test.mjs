@@ -141,7 +141,13 @@ test("Edición, disponibilidad, vencimiento y confirmación de pago", async t =>
   const asignado = (await reservasAdmin()).find(fila => fila.numero === 11);
   assert.ok(asignado.referencia);
   assert.equal(asignado.estado, "reservado");
-  assert.equal((await actualizar({ ...asignado, accion: "liberar" })).status, 200);
+  const pagoRapido = { numero: asignado.numero, accion: "pagar", referencia: asignado.referencia, version: asignado.version };
+  assert.equal(await (await actualizar(pagoRapido)).json(), "Actualizado.");
+  const confirmado = (await reservasAdmin()).find(fila => fila.numero === asignado.numero);
+  assert.equal(confirmado.estado, "pagado");
+  assert.equal(confirmado.contacto, asignado.contacto);
+  assert.equal((await actualizar(pagoRapido)).status, 409);
+  assert.equal((await actualizar({ ...confirmado, accion: "liberar" })).status, 200);
   assert.equal((await actualizar(manual)).status, 409);
   sqlite.exec("UPDATE marco_rifa_numeros SET vence=0 WHERE numero=7");
   const vencido = (await reservasAdmin()).find(fila => fila.numero === 7);
