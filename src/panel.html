@@ -56,7 +56,7 @@
         <label>Nombre<input name="nombre" required maxlength="80"></label>
         <label>Apellido (opcional)<input name="apellido" maxlength="80"></label>
         <label>WhatsApp
-          <span class="telefono-comprador"><span id="prefijo">+54</span><input type="tel" name="contacto" required maxlength="24" placeholder="351 123 4567"></span>
+          <span class="telefono-comprador"><span id="prefijo">+54</span><input type="tel" name="contacto" required placeholder="351 123 4567"></span>
         </label>
         <label>Estado<select name="accion">
           <option value="guardar">Conservar estado</option><option value="reservar">Reservado por Marco</option>
@@ -183,7 +183,19 @@
       if (destino) mensaje.href = "https://wa.me/" + destino;
       else mensaje.removeAttribute("href");
     }
-    contacto.addEventListener("input", () => actualizarWhatsApp());
+    function limpiarTelefono(valor) {
+      return valor.replace(/[^0-9+]/g, "").replace(/(?!^)\+/g, "");
+    }
+    contacto.addEventListener("input", () => {
+      const original = contacto.value;
+      const limpio = limpiarTelefono(original);
+      if (original !== limpio) {
+        const cursor = limpiarTelefono(original.slice(0, contacto.selectionStart)).length;
+        contacto.value = limpio;
+        contacto.setSelectionRange(cursor, cursor);
+      }
+      actualizarWhatsApp();
+    });
     contacto.addEventListener("blur", () => actualizarWhatsApp(true));
     function abrirFicha(fila) {
       const disponible = fila.estado === "disponible";
